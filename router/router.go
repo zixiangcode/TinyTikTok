@@ -1,7 +1,7 @@
 package router
 
 import (
-	"github.com/RaymondCode/simple-demo/controller"
+	"TinyTikTok/controller"
 	"github.com/gin-gonic/gin"
 )
 
