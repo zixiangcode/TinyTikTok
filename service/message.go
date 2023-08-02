@@ -1,9 +1,9 @@
 package service
 
 import (
+	"TinyTikTok/controller"
 	"encoding/json"
 	"fmt"
-	"github.com/RaymondCode/simple-demo/controller"
 	"io"
 	"net"
 	"sync"
