@@ -204,14 +204,34 @@ func CommentAction(c *gin.Context) {
 			}
 			defer db.Close()
 
+			tx := db.Begin()
+			if tx.Error != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"status_code": 1,
+					"status_msg":  "Failed to create comment",
+				})
+				return
+			}
+
 			// 删除评论记录
-			if err := db.Where("id = ?", ID).Delete(&Comment{}).Error; err != nil {
+			if err := tx.Where("id = ?", request.CommentID).Delete(&Comment{}).Error; err != nil {
+				tx.Rollback()
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"status_code": 1,
 					"status_msg":  "Failed to delete comment",
 				})
 				return
 			}
+			//从videoComment数据库中删除评论id
+			if err := tx.Where("comment_id = ?", request.CommentID).Delete(&videoComment{}).Error; err != nil {
+				tx.Rollback()
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"status_code": 1,
+					"status_msg":  "Failed to delete comment",
+				})
+				return
+			}
+			tx.Commit()
 
 			c.JSON(http.StatusOK, Response{
 				StatusCode: 0,
