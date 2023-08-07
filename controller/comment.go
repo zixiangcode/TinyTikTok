@@ -83,6 +83,11 @@ type CommentActionRequest struct {
 	VideoID     string  `json:"video_id"`               // 视频id
 }
 
+type videoComment struct {
+	VideoId   string `json:"video_id"`
+	CommentId int64  `json:"comment_id"`
+}
+
 // CommentListResponse represents the JSON response for the comment list API
 type CommentListResponse struct {
 	Response
@@ -134,15 +139,41 @@ func CommentAction(c *gin.Context) {
 				})
 				return
 			}
+			defer db.Close()
 
-			// 创建评论记录
-			if err := db.Create(&comment).Error; err != nil {
+			// 开启事务
+			tx := db.Begin()
+			if tx.Error != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"status_code": 1,
 					"status_msg":  "Failed to create comment",
 				})
 				return
 			}
+
+			// 创建评论记录
+			if err := tx.Create(&comment).Error; err != nil {
+				// 回滚事务
+				tx.Rollback()
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"status_code": 1,
+					"status_msg":  "Failed to create comment",
+				})
+				return
+			}
+			commentID := comment.Id
+			if err := tx.Create(videoComment{CommentId: commentID}).Error; err != nil {
+				// 回滚事务
+				tx.Rollback()
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"status_code": 1,
+					"status_msg":  "Failed to video comment",
+				})
+				return
+			}
+
+			// 提交事务
+			tx.Commit()
 
 			c.JSON(http.StatusOK, CommentActionResponse{
 				Response: Response{
@@ -174,7 +205,7 @@ func CommentAction(c *gin.Context) {
 			defer db.Close()
 
 			// 删除评论记录
-			if err := db.Where("id = ?", commentID).Delete(&Comment{}).Error; err != nil {
+			if err := db.Where("id = ?", ID).Delete(&Comment{}).Error; err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"status_code": 1,
 					"status_msg":  "Failed to delete comment",
