@@ -1,54 +1,8 @@
 package controller
 
-//import (
-//	"net/http"
-//
-//	"github.com/gin-gonic/gin"
-//)
-//
-//type CommentListResponse struct {
-//	Response
-//	CommentList []Comment `json:"comment_list,omitempty"`
-//}
-//
-//type CommentActionResponse struct {
-//	Response
-//	Comment Comment `json:"comment,omitempty"`
-//}
-//
-//// CommentAction no practical effect, just check if token is valid
-//func CommentAction(c *gin.Context) {
-//	token := c.Query("token")
-//	actionType := c.Query("action_type")
-//
-//	if user, exist := usersLoginInfo[token]; exist {
-//		if actionType == "1" {
-//			text := c.Query("comment_text")
-//			c.JSON(http.StatusOK, CommentActionResponse{Response: Response{StatusCode: 0},
-//				Comment: Comment{
-//					Id:         1,
-//					User:       user,
-//					Content:    text,
-//					CreateDate: "05-01",
-//				}})
-//			return
-//		}
-//		c.JSON(http.StatusOK, Response{StatusCode: 0})
-//	} else {
-//		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
-//	}
-//}
-//
-//// CommentList all videos have same demo comment list
-//func CommentList(c *gin.Context) {
-//	c.JSON(http.StatusOK, CommentListResponse{
-//		Response:    Response{StatusCode: 0},
-//		CommentList: DemoComments,
-//	})
-//}
-
 import (
 	"net/http"
+	"strconv"
 	"time"
 
 	"gorm.io/driver/mysql"
@@ -60,17 +14,11 @@ import (
 // 初始化GORM数据库连接
 func initDB() (*gorm.DB, error) {
 	dsn := "root:123456@tcp(192.168.111.129:3306)/TikTok?charset=utf8mb4&parseTime=True&loc=Local"
+	//db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{TranslateError: true})
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
-
-	// 自动迁移数据库，创建Comment表
-	err = db.AutoMigrate(&Comment{})
-	if err != nil {
-		return nil, err
-	}
-
 	return db, nil
 }
 
@@ -83,21 +31,22 @@ type CommentActionRequest struct {
 	VideoID     string  `json:"video_id"`               // 视频id
 }
 
-type videoComment struct {
-	VideoId   string `json:"video_id"`
-	CommentId int64  `json:"comment_id"`
+type MyComment struct {
+	Id         uint64 `json:"id,omitempty"`
+	User       User   `json:"user"`
+	Content    string `json:"content,omitempty"`
+	CreateDate string `json:"create_date,omitempty"`
 }
 
-// CommentListResponse represents the JSON response for the comment list API
 type CommentListResponse struct {
 	Response
-	CommentList []Comment `json:"comment_list,omitempty"`
+	CommentList []MyComment `json:"comment_list,omitempty"`
 }
 
 // CommentActionResponse represents the JSON response for the comment action API
 type CommentActionResponse struct {
 	Response
-	Comment Comment `json:"comment,omitempty"`
+	Comment MyComment `json:"comment,omitempty"`
 }
 
 // CommentAction handles the comment action API
@@ -111,10 +60,14 @@ func CommentAction(c *gin.Context) {
 		return
 	}
 
+	//单独开发评论API，暂时没用到token
 	token := c.Query("token")
 	actionType := c.Query("action_type")
+	videoid := c.Query("video_id")
 
-	if user, exist := usersLoginInfo[token]; exist {
+	//单独开发评论API，暂时没用到token
+	//if user, exist := usersLoginInfo[token]; exist {
+	if true {
 		if actionType == "1" {
 			if text := c.Query("comment_text"); text == "" {
 				c.JSON(http.StatusBadRequest, Response{
@@ -124,8 +77,12 @@ func CommentAction(c *gin.Context) {
 				return
 			}
 
+			//暂时将token用作userid
+			userid, err := strconv.ParseUint(token, 10, 64)
+			videoid, err := strconv.ParseUint(videoid, 10, 64)
 			comment := Comment{
-				User:       user,
+				VideoID:    videoid,
+				UserID:     userid,
 				Content:    *request.CommentText,
 				CreateDate: time.Now().Format("01-02"), // Replace this with the actual creation date
 			}
@@ -139,48 +96,38 @@ func CommentAction(c *gin.Context) {
 				})
 				return
 			}
-			defer db.Close()
-
-			// 开启事务
-			tx := db.Begin()
-			if tx.Error != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"status_code": 1,
-					"status_msg":  "Failed to create comment",
-				})
-				return
-			}
 
 			// 创建评论记录
-			if err := tx.Create(&comment).Error; err != nil {
-				// 回滚事务
-				tx.Rollback()
+			if err := db.Create(&comment).Error; err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"status_code": 1,
 					"status_msg":  "Failed to create comment",
 				})
 				return
 			}
-			commentID := comment.Id
-			if err := tx.Create(videoComment{CommentId: commentID}).Error; err != nil {
-				// 回滚事务
-				tx.Rollback()
+
+			//查询uesr信息，并拼接到response中
+			user := User{}
+			if err := db.Find(&user, userid).Error; err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"status_code": 1,
-					"status_msg":  "Failed to video comment",
+					"status_msg":  "Failed to create comment",
 				})
 				return
 			}
-
-			// 提交事务
-			tx.Commit()
+			myComment := MyComment{
+				Id:         comment.Id,
+				User:       user,
+				Content:    comment.Content,
+				CreateDate: comment.CreateDate,
+			}
 
 			c.JSON(http.StatusOK, CommentActionResponse{
 				Response: Response{
 					StatusCode: 0,
 					StatusMsg:  "Comment added successfully.",
 				},
-				Comment: comment,
+				Comment: myComment,
 			})
 			return
 
@@ -202,36 +149,15 @@ func CommentAction(c *gin.Context) {
 				})
 				return
 			}
-			defer db.Close()
-
-			tx := db.Begin()
-			if tx.Error != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"status_code": 1,
-					"status_msg":  "Failed to create comment",
-				})
-				return
-			}
 
 			// 删除评论记录
-			if err := tx.Where("id = ?", request.CommentID).Delete(&Comment{}).Error; err != nil {
-				tx.Rollback()
+			if err := db.Where("id = ?", request.CommentID).Delete(&Comment{}).Error; err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"status_code": 1,
 					"status_msg":  "Failed to delete comment",
 				})
 				return
 			}
-			//从videoComment数据库中删除评论id
-			if err := tx.Where("comment_id = ?", request.CommentID).Delete(&videoComment{}).Error; err != nil {
-				tx.Rollback()
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"status_code": 1,
-					"status_msg":  "Failed to delete comment",
-				})
-				return
-			}
-			tx.Commit()
 
 			c.JSON(http.StatusOK, Response{
 				StatusCode: 0,
@@ -254,56 +180,41 @@ func CommentAction(c *gin.Context) {
 }
 
 func CommentList(c *gin.Context) {
-	token := c.Query("token")
+	//_:= c.Query("token")
 	videoID := c.Query("video_id")
 
-	// 查询视频的所有评论，并按发布时间倒序排序
-	var comments []Comment
-	if err := db.Where("video_id = ?", videoID).Order("create_date desc").Find(&comments).Error; err != nil {
+	db, err := initDB()
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"status_code": 1,
-			"status_msg":  "Failed to get comments",
+			"status_msg":  "Internal Server Error",
 		})
 		return
 	}
 
-	comments := []Comment{
-		{
-			ID: 1,
-			User: User{
-				ID:              1,
-				Name:            "User1",
-				FollowCount:     10,
-				FollowerCount:   20,
-				IsFollow:        true,
-				Avatar:          "avatar_url",
-				BackgroundImage: "background_url",
-				Signature:       "User1 signature",
-				TotalFavorited:  "100",
-				WorkCount:       5,
-				FavoriteCount:   50,
-			},
-			Content:    "This is the first comment.",
-			CreateDate: "2023-08-05 12:34:56",
-		},
-		{
-			ID: 2,
-			User: User{
-				ID:              2,
-				Name:            "User2",
-				FollowCount:     15,
-				FollowerCount:   25,
-				IsFollow:        false,
-				Avatar:          "avatar_url",
-				BackgroundImage: "background_url",
-				Signature:       "User2 signature",
-				TotalFavorited:  "200",
-				WorkCount:       10,
-				FavoriteCount:   100,
-			},
-			Content:    "This is the second comment.",
-			CreateDate: "2023-08-05 13:45:32",
-		},
+	// 查询视频的所有评论，并按发布时间倒序排序
+	var comments []Comment
+
+	result := db.Preload("User").
+		Find(&comments, "video_id = ?", videoID).
+		Order("create_date desc")
+	if result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status_code": 1,
+			"status_msg":  "Failed to get comments2",
+		})
+		return
+	}
+
+	var myComments []MyComment
+	for _, comment := range comments {
+		myComment := MyComment{
+			Id:         comment.Id,
+			User:       comment.User,
+			Content:    comment.Content,
+			CreateDate: comment.CreateDate,
+		}
+		myComments = append(myComments, myComment)
 	}
 
 	c.JSON(http.StatusOK, CommentListResponse{
@@ -311,6 +222,6 @@ func CommentList(c *gin.Context) {
 			StatusCode: 0,
 			StatusMsg:  "Success",
 		},
-		CommentList: comments,
+		CommentList: myComments,
 	})
 }
