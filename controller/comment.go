@@ -51,8 +51,13 @@ type CommentActionResponse struct {
 
 // CommentAction handles the comment action API
 func CommentAction(c *gin.Context) {
-	var request CommentActionRequest
-	if err := c.ShouldBindJSON(&request); err != nil {
+
+	//单独开发评论API，暂时没用到token
+	token := c.Query("token")
+	actionType := c.Query("action_type")
+	videoid := c.Query("video_id")
+
+	if token == "" || actionType == "" || videoid == "" {
 		c.JSON(http.StatusBadRequest, Response{
 			StatusCode: 1,
 			StatusMsg:  "Invalid request",
@@ -60,16 +65,10 @@ func CommentAction(c *gin.Context) {
 		return
 	}
 
-	//单独开发评论API，暂时没用到token
-	token := c.Query("token")
-	actionType := c.Query("action_type")
-	videoid := c.Query("video_id")
-
-	//单独开发评论API，暂时没用到token
 	//if user, exist := usersLoginInfo[token]; exist {
 	if true {
 		if actionType == "1" {
-			if text := c.Query("comment_text"); text == "" {
+			if c.Query("comment_text") == "" {
 				c.JSON(http.StatusBadRequest, Response{
 					StatusCode: 1,
 					StatusMsg:  "Comment text is empty",
@@ -78,12 +77,28 @@ func CommentAction(c *gin.Context) {
 			}
 
 			//暂时将token用作userid
-			userid, err := strconv.ParseUint(token, 10, 64)
-			videoid, err := strconv.ParseUint(videoid, 10, 64)
+			userid, err1 := strconv.ParseUint(token, 10, 64)
+			if err1 != nil {
+				c.JSON(http.StatusBadRequest, Response{
+					StatusCode: 1,
+					StatusMsg:  "Invalid userid",
+				})
+				return
+			}
+
+			videoid, err2 := strconv.ParseUint(videoid, 10, 64)
+			if err2 != nil {
+				c.JSON(http.StatusBadRequest, Response{
+					StatusCode: 1,
+					StatusMsg:  "Invalid videoid",
+				})
+				return
+			}
+
 			comment := Comment{
 				VideoID:    videoid,
 				UserID:     userid,
-				Content:    *request.CommentText,
+				Content:    c.Query("comment_text"),
 				CreateDate: time.Now().Format("01-02"), // Replace this with the actual creation date
 			}
 
@@ -133,7 +148,7 @@ func CommentAction(c *gin.Context) {
 
 			//	删除评论操作
 		} else if actionType == "2" {
-			if request.CommentID == nil {
+			if c.Query("comment_id") == "" {
 				c.JSON(http.StatusBadRequest, Response{
 					StatusCode: 1,
 					StatusMsg:  "Comment ID is required for action_type=2",
@@ -151,7 +166,7 @@ func CommentAction(c *gin.Context) {
 			}
 
 			// 删除评论记录
-			if err := db.Where("id = ?", request.CommentID).Delete(&Comment{}).Error; err != nil {
+			if err := db.Where("id = ?", c.Query("comment_id")).Delete(&Comment{}).Error; err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"status_code": 1,
 					"status_msg":  "Failed to delete comment",
