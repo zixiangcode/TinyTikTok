@@ -1,12 +1,18 @@
 package main
 
 import (
+	"TinyTikTok/config"
+	"TinyTikTok/db"
 	"TinyTikTok/router"
 	"TinyTikTok/service"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
+
+	config.ReadConfig("config/configuration.json") // 先读取配置文件
+	db.CreateGORMDB()                              // 创建 GORM 连接 MySql
+
 	go service.RunMessageServer()
 
 	r := gin.Default()

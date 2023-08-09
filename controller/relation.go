@@ -1,12 +1,13 @@
 package controller
 
 import (
+	"TinyTikTok/models"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
 type UserListResponse struct {
-	Response
+	models.Response
 	UserList []User `json:"user_list"`
 }
 
@@ -15,16 +16,16 @@ func RelationAction(c *gin.Context) {
 	token := c.Query("token")
 
 	if _, exist := usersLoginInfo[token]; exist {
-		c.JSON(http.StatusOK, Response{StatusCode: 0})
+		c.JSON(http.StatusOK, models.Response{StatusCode: 0})
 	} else {
-		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
+		c.JSON(http.StatusOK, models.Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
 	}
 }
 
 // FollowList all users have same follow list
 func FollowList(c *gin.Context) {
 	c.JSON(http.StatusOK, UserListResponse{
-		Response: Response{
+		Response: models.Response{
 			StatusCode: 0,
 		},
 		UserList: []User{DemoUser},
@@ -34,7 +35,7 @@ func FollowList(c *gin.Context) {
 // FollowerList all users have same follower list
 func FollowerList(c *gin.Context) {
 	c.JSON(http.StatusOK, UserListResponse{
-		Response: Response{
+		Response: models.Response{
 			StatusCode: 0,
 		},
 		UserList: []User{DemoUser},
@@ -44,7 +45,7 @@ func FollowerList(c *gin.Context) {
 // FriendList all users have same friend list
 func FriendList(c *gin.Context) {
 	c.JSON(http.StatusOK, UserListResponse{
-		Response: Response{
+		Response: models.Response{
 			StatusCode: 0,
 		},
 		UserList: []User{DemoUser},

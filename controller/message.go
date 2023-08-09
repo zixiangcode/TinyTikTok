@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"TinyTikTok/models"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -14,7 +15,7 @@ var tempChat = map[string][]Message{}
 var messageIdSequence = int64(1)
 
 type ChatResponse struct {
-	Response
+	models.Response
 	MessageList []Message `json:"message_list"`
 }
 
@@ -40,9 +41,9 @@ func MessageAction(c *gin.Context) {
 		} else {
 			tempChat[chatKey] = []Message{curMessage}
 		}
-		c.JSON(http.StatusOK, Response{StatusCode: 0})
+		c.JSON(http.StatusOK, models.Response{StatusCode: 0})
 	} else {
-		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
+		c.JSON(http.StatusOK, models.Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
 	}
 }
 
@@ -55,9 +56,9 @@ func MessageChat(c *gin.Context) {
 		userIdB, _ := strconv.Atoi(toUserId)
 		chatKey := genChatKey(user.Id, int64(userIdB))
 
-		c.JSON(http.StatusOK, ChatResponse{Response: Response{StatusCode: 0}, MessageList: tempChat[chatKey]})
+		c.JSON(http.StatusOK, ChatResponse{Response: models.Response{StatusCode: 0}, MessageList: tempChat[chatKey]})
 	} else {
-		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
+		c.JSON(http.StatusOK, models.Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
 	}
 }
 
