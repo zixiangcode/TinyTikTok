@@ -12,6 +12,10 @@ type User struct {
 	IsFollow        bool   `json:"is_follow"`        // true-已关注，false-未关注
 	Name            string `json:"name"`             // 用户名称
 	Signature       string `json:"signature"`        // 个人简介
-	TotalFavorited  string `json:"total_favorited"`  // 获赞数量
+	TotalFavorited  int64  `json:"total_favorited"`  // 获赞数量
 	WorkCount       int64  `json:"work_count"`       // 作品数
+}
+
+func (table *User) TableName() string {
+	return "user"
 }
