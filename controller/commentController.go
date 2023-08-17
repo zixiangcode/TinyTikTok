@@ -44,7 +44,7 @@ func CommentAction(c *gin.Context) { //添加或者删除评论操作
 		})
 	}
 	// 从 userClaims 中获取 UserID
-	userID := userClaims.JWTCommonEntity.Id
+	userID := userClaims.CommonEntity.Id
 
 	//actionType为1，进行发表评论操作
 	if actionType == "1" {
