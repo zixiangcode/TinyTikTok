@@ -24,11 +24,25 @@ func (commentServiceImpl CommentServiceImpl) AddComment(comment models.Comment) 
 		return models.CommentCommonResponse{}, err
 	}
 
+	commentuserinfo := models.CommentUserInfo{
+		ID:              user.Id,
+		Name:            user.Name,
+		FollowCount:     user.FollowCount,
+		FollowerCount:   user.FollowerCount,
+		IsFollow:        user.IsFollow,
+		Avatar:          user.Avatar,
+		BackgroundImage: user.BackgroundImage,
+		Signature:       user.Signature,
+		TotalFavorited:  user.TotalFavorited,
+		WorkCount:       user.WorkCount,
+		FavoriteCount:   user.FavoriteCount,
+	}
+
 	commentCommonResponse := models.CommentCommonResponse{
 		Id:         commentId,
-		User:       user,
+		User:       commentuserinfo,
 		Content:    comment.Content,
-		CreateDate: comment.CreateTime.Format("01-02"),
+		CreateTime: comment.CreateTime.Format("01-02"),
 	}
 	return commentCommonResponse, nil
 }
@@ -60,11 +74,26 @@ func (commentServiceImpl CommentServiceImpl) GetCommentsByVideoID(videoID int64)
 			log.Printf("方法 GetCommentsByVideoID() 失败 %v", err)
 			return []models.CommentCommonResponse{}, err
 		}
+
+		commentuserinfo := models.CommentUserInfo{
+			ID:              user.Id,
+			Name:            user.Name,
+			FollowCount:     user.FollowCount,
+			FollowerCount:   user.FollowerCount,
+			IsFollow:        user.IsFollow,
+			Avatar:          user.Avatar,
+			BackgroundImage: user.BackgroundImage,
+			Signature:       user.Signature,
+			TotalFavorited:  user.TotalFavorited,
+			WorkCount:       user.WorkCount,
+			FavoriteCount:   user.FavoriteCount,
+		}
+
 		myComment := models.CommentCommonResponse{
 			Id:         comment.Id,
-			User:       user,
+			User:       commentuserinfo,
 			Content:    comment.Content,
-			CreateDate: comment.CreateTime.Format("01-02"),
+			CreateTime: comment.CreateTime.Format("01-02"),
 		}
 		commentCommonResponses = append(commentCommonResponses, myComment)
 	}

@@ -10,7 +10,7 @@ import (
 
 type VideoListResponse struct {
 	models.Response
-	VideoList []Video `json:"video_list"`
+	VideoList []models.Video `json:"video_list"`
 }
 
 // Publish check token then save upload file to public directory

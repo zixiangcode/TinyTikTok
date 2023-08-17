@@ -58,14 +58,11 @@ func CommentAction(c *gin.Context) { //添加或者删除评论操作
 		}
 
 		//准备评论数据
-		commonEntity := models.CommonEntity{
-			CreateTime: time.Now(),
-		}
 		comment := models.Comment{
 			VideoID:      videoID,
 			UserID:       userID,
 			Content:      c.Query("comment_text"),
-			CommonEntity: commonEntity,
+			CommonEntity: models.CommonEntity{CreateTime: time.Now()},
 		}
 
 		//调用AddComment函数添加评论信息
@@ -78,11 +75,9 @@ func CommentAction(c *gin.Context) { //添加或者删除评论操作
 			return
 		}
 		c.JSON(http.StatusOK, models.CommentActionResponse{
-			Response: models.Response{
-				StatusCode: 0,
-				StatusMsg:  "Comment added successfully.",
-			},
-			Comment: commentCommonResponse,
+			StatusCode: 0,
+			StatusMsg:  "Comment added successfully.",
+			Comment:    commentCommonResponse,
 		})
 		return
 	} else if actionType == "2" { //删除评论操作
@@ -114,9 +109,10 @@ func CommentAction(c *gin.Context) { //添加或者删除评论操作
 			return
 		}
 
-		c.JSON(http.StatusOK, models.Response{
-			StatusCode: 0,
-			StatusMsg:  "Comment deleted successfully.",
+		c.JSON(http.StatusOK, models.CommentListResponse{
+			StatusCode:  0,
+			StatusMsg:   "Comment deletion successful",
+			CommentList: nil,
 		})
 		return
 	}
@@ -143,10 +139,8 @@ func CommentList(c *gin.Context) { // 查询视频评论列表操作
 		return
 	}
 	c.JSON(http.StatusOK, models.CommentListResponse{
-		Response: models.Response{
-			StatusCode: 0,
-			StatusMsg:  "Success",
-		},
+		StatusCode:  0,
+		StatusMsg:   "Success",
 		CommentList: myComments,
 	})
 }

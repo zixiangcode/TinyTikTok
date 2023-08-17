@@ -20,8 +20,9 @@ func DeleteComment(commentID int64) error {
 
 func GetCommentsByVideoID(videoID int64) ([]models.Comment, error) {
 	var comments []models.Comment
-	result := db.GetMysqlDB().Preload("User").
-		Find(&comments, "video_id = ?", videoID).
-		Order("create_date desc")
+	result := db.GetMysqlDB().
+		Where("video_id = ? AND is_deleted <> 1", videoID).
+		Order("create_time desc").
+		Find(&comments)
 	return comments, result.Error
 }
