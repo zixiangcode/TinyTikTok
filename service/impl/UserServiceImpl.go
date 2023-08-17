@@ -3,6 +3,7 @@ package impl
 import (
 	"TinyTikTok/db"
 	"TinyTikTok/models"
+	"TinyTikTok/utils"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -94,8 +95,9 @@ func (userService UserServiceImpl) Login(username string, password string, conte
 		})
 		return pwdErr
 	}
-	// TODO: 生成和解析 token 的函数待实现，放在 utils 层中
-	token := ""
+	// 生成token
+	token, err := utils.GenerateToken(username, utils.JWTCommonEntity{Id: user.Id,
+		CreateTime: user.CreateTime, IsDeleted: user.IsDeleted})
 	// 登录成功
 	context.JSON(http.StatusOK, models.UserLoginResponse{
 		Response: models.Response{StatusCode: 0, StatusMsg: "登录成功！"},

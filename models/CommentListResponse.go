@@ -1,6 +1,7 @@
 package models
 
 type CommentListResponse struct {
-	Response
+	StatusCode  int32                   `json:"status_code"`
+	StatusMsg   string                  `json:"status_msg,omitempty"`
 	CommentList []CommentCommonResponse `json:"comment_list,omitempty"`
 }
