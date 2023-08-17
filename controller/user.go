@@ -44,7 +44,9 @@ func Register(c *gin.Context) {
 	err := impl.UserServiceImpl{}.Register(username, password, c)
 	if err != nil {
 		log.Printf("Register Error!")
+
 	}
+
 	/*
 		token := username + password
 
