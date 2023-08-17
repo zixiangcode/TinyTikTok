@@ -6,5 +6,5 @@ import (
 
 type CommentService interface {
 	Add(comment models.Comment) (int64, error)
-	Delete(commentID int64) error
+	DeleteComment(commentID int64) error
 }

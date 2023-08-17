@@ -1,6 +1,6 @@
 package models
 
-type Comment struct {
+type Comment struct { //储存在数据库中的评论结构
 	CommonEntity // 此中已包含了 CreateTime
 	//ID         int64  `json:"id"`          // 评论id
 	Content string `json:"content"` // 评论内容
@@ -14,7 +14,7 @@ func (table *Comment) TableName() string {
 	return "comments"
 }
 
-type MyComment struct {
+type CommentCommonResponse struct { //返回的评论信息结构体
 	Id         int64  `json:"id,omitempty"`
 	User       User   `json:"user"`
 	Content    string `json:"content,omitempty"`

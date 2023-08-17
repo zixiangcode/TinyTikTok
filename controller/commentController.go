@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func CommentAction(c *gin.Context) {
+func CommentAction(c *gin.Context) { //添加或者删除评论操作
 
 	token := c.Query("token")
 	actionType := c.Query("action_type")
@@ -26,8 +26,8 @@ func CommentAction(c *gin.Context) {
 	}
 
 	//将videoid从String转换成Int64
-	videoID, err2 := strconv.ParseInt(videoid, 10, 64)
-	if err2 != nil {
+	videoID, err := strconv.ParseInt(videoid, 10, 64)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, models.Response{
 			StatusCode: 1,
 			StatusMsg:  "Invalid videoid",
@@ -61,7 +61,6 @@ func CommentAction(c *gin.Context) {
 		commonEntity := models.CommonEntity{
 			CreateTime: time.Now(),
 		}
-
 		comment := models.Comment{
 			VideoID:      videoID,
 			UserID:       userID,
@@ -69,7 +68,8 @@ func CommentAction(c *gin.Context) {
 			CommonEntity: commonEntity,
 		}
 
-		userID, err := impl.CommentServiceImpl{}.Add(comment)
+		//调用AddComment函数添加评论信息
+		commentCommonResponse, err := impl.CommentServiceImpl{}.AddComment(comment)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"status_code": 1,
@@ -77,30 +77,12 @@ func CommentAction(c *gin.Context) {
 			})
 			return
 		}
-
-		//查询uesr信息，并拼接到response中
-		user, err := impl.UserServiceImpl{}.GetUserById(userID)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"status_code": 1,
-				"status_msg":  "Failed to create comment",
-			})
-			return
-		}
-
-		myComment := models.MyComment{
-			Id:         userID,
-			User:       user,
-			Content:    c.Query("comment_text"),
-			CreateDate: commonEntity.CreateTime.Format("01-02"),
-		}
-
 		c.JSON(http.StatusOK, models.CommentActionResponse{
 			Response: models.Response{
 				StatusCode: 0,
 				StatusMsg:  "Comment added successfully.",
 			},
-			Comment: myComment,
+			Comment: commentCommonResponse,
 		})
 		return
 	} else if actionType == "2" { //删除评论操作
@@ -123,7 +105,7 @@ func CommentAction(c *gin.Context) {
 			return
 		}
 		// 删除评论记录
-		err1 := impl.CommentServiceImpl{}.Delete(commentID)
+		err1 := impl.CommentServiceImpl{}.DeleteComment(commentID)
 		if err1 != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"status_code": 1,
@@ -140,12 +122,11 @@ func CommentAction(c *gin.Context) {
 	}
 }
 
-// 查询视频评论列表操作
-func CommentList(c *gin.Context) {
+func CommentList(c *gin.Context) { // 查询视频评论列表操作
 	videoid := c.Query("video_id")
 	//将videoid从String转换成Int64
-	videoID, err2 := strconv.ParseInt(videoid, 10, 64)
-	if err2 != nil {
+	videoID, err := strconv.ParseInt(videoid, 10, 64)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, models.Response{
 			StatusCode: 1,
 			StatusMsg:  "Invalid videoid",
