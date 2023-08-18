@@ -1,32 +1,26 @@
 package utils
 
 import (
+	"TinyTikTok/models"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
-	"time"
 )
 
 type UserClaims struct {
-	JWTCommonEntity
+	models.CommonEntity
 	Name string `json:"name"`
 	jwt.StandardClaims
-}
-
-type JWTCommonEntity struct {
-	Id         int64     `json:"id,omitempty"`
-	CreateTime time.Time `json:"create_time,omitempty"`
-	IsDeleted  int64     `json:"is_deleted"`
 }
 
 // 密匙
 var jwtSigningKey = []byte("tinytiktok")
 
 // GenerateToken 生成 token
-func GenerateToken(name string, jWTCommonEntity JWTCommonEntity) (string, error) {
+func GenerateToken(name string, commonEntity models.CommonEntity) (string, error) {
 	userClaims := &UserClaims{
-		JWTCommonEntity: jWTCommonEntity,
-		Name:            name,
-		StandardClaims:  jwt.StandardClaims{},
+		CommonEntity:   commonEntity,
+		Name:           name,
+		StandardClaims: jwt.StandardClaims{},
 	}
 	// 使用 HS256 签名方法创建一个 JWT，并使用 jwtSigningKey 进行签名
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, userClaims)

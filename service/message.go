@@ -1,7 +1,7 @@
 package service
 
 import (
-	"TinyTikTok/models"
+	"TinyTikTok/controller"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -43,7 +43,7 @@ func process(conn net.Conn) {
 			continue
 		}
 
-		var event = models.MessageSendEvent{}
+		var event = controller.MessageSendEvent{}
 		_ = json.Unmarshal(buf[:n], &event)
 		fmt.Printf("Receive Message：%+v\n", event)
 
@@ -60,7 +60,7 @@ func process(conn net.Conn) {
 			continue
 		}
 
-		pushEvent := models.MessagePushEvent{
+		pushEvent := controller.MessagePushEvent{
 			FromUserId: event.UserId,
 			MsgContent: event.MsgContent,
 		}

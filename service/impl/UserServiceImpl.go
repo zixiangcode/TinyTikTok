@@ -3,7 +3,6 @@ package impl
 import (
 	"TinyTikTok/db"
 	"TinyTikTok/models"
-	"TinyTikTok/utils"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -36,13 +35,13 @@ func (userService UserServiceImpl) GetUserByName(name string) (models.User, erro
 	return user, nil
 }
 
-func (userService UserServiceImpl) SaveUser(user models.User) (int64, error) {
-	result := db.GetMysqlDB().Create(&user)
-	if result.Error != nil {
-		log.Printf("方法 SaveUser() 失败 %v", result.Error)
-		return user.Id, result.Error
+func (userService UserServiceImpl) SaveUser(user models.User) error {
+	err := db.GetMysqlDB().Create(&user).Error
+	if err != nil {
+		log.Printf("方法 SaveUser() 失败 %v", err)
+		return err
 	}
-	return user.Id, result.Error
+	return nil
 }
 
 func (userService UserServiceImpl) Register(username string, password string, context *gin.Context) error {
@@ -64,27 +63,16 @@ func (userService UserServiceImpl) Register(username string, password string, co
 		Password:     password,
 	}
 
-	userID, err := userService.SaveUser(newUser) // 存到数据库中
+	err := userService.SaveUser(newUser) // 存到数据库中
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, models.UserLoginResponse{
 			Response: models.Response{StatusCode: 1, StatusMsg: "无法保存用户！"},
 		})
-	} else { //注册界面需要返回token,因为注册之后会直接登录，之后会直接使用token进行操作
-		token, err := utils.GenerateToken(username, utils.JWTCommonEntity{Id: userID,
-			CreateTime: newUser.CreateTime, IsDeleted: newUser.IsDeleted})
-		if err != nil {
-			context.JSON(http.StatusInternalServerError, models.UserRegisterResponse{
-				StatusCode: 1,
-				StatusMsg:  "无法保存用户！",
-			})
-		}
-		context.JSON(http.StatusOK, models.UserRegisterResponse{
-			StatusCode: 0,
-			StatusMsg:  "Register successful!",
-			UserID:     userID,
-			Token:      token,
+	} else {
+		context.JSON(http.StatusOK, models.UserLoginResponse{
+			Response: models.Response{StatusCode: 0},
+			UserId:   newUser.Id,
 		})
-		return nil
 	}
 	return nil
 }
@@ -106,9 +94,8 @@ func (userService UserServiceImpl) Login(username string, password string, conte
 		})
 		return pwdErr
 	}
-	// 生成token
-	token, err := utils.GenerateToken(username, utils.JWTCommonEntity{Id: user.Id,
-		CreateTime: user.CreateTime, IsDeleted: user.IsDeleted})
+	// TODO: 生成和解析 token 的函数待实现，放在 utils 层中
+	token := ""
 	// 登录成功
 	context.JSON(http.StatusOK, models.UserLoginResponse{
 		Response: models.Response{StatusCode: 0, StatusMsg: "登录成功！"},

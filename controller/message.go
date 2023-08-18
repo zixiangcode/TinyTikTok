@@ -10,13 +10,13 @@ import (
 	"time"
 )
 
-var tempChat = map[string][]models.Message{}
+var tempChat = map[string][]Message{}
 
 var messageIdSequence = int64(1)
 
 type ChatResponse struct {
 	models.Response
-	MessageList []models.Message `json:"message_list"`
+	MessageList []Message `json:"message_list"`
 }
 
 // MessageAction no practical effect, just check if token is valid
@@ -30,16 +30,16 @@ func MessageAction(c *gin.Context) {
 		chatKey := genChatKey(user.Id, int64(userIdB))
 
 		atomic.AddInt64(&messageIdSequence, 1)
-
-		curMessage := models.Message{
-			CommonEntity: models.CommonEntity{Id: messageIdSequence, CreateTime: time.Now()},
-			Content:      content,
+		curMessage := Message{
+			Id:         messageIdSequence,
+			Content:    content,
+			CreateTime: time.Now().Format(time.Kitchen),
 		}
 
 		if messages, exist := tempChat[chatKey]; exist {
 			tempChat[chatKey] = append(messages, curMessage)
 		} else {
-			tempChat[chatKey] = []models.Message{curMessage}
+			tempChat[chatKey] = []Message{curMessage}
 		}
 		c.JSON(http.StatusOK, models.Response{StatusCode: 0})
 	} else {
