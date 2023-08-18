@@ -1,28 +1,32 @@
 package controller
 
-var DemoVideos = []Video{
+import (
+	"TinyTikTok/models"
+	"time"
+)
+
+var DemoVideos = []models.Video{
 	{
-		Id:            1,
+		CommonEntity:  models.CommonEntity{Id: 1},
 		Author:        DemoUser,
-		PlayUrl:       "https://www.w3schools.com/html/movie.mp4",
-		CoverUrl:      "https://cdn.pixabay.com/photo/2016/03/27/18/10/bear-1283347_1280.jpg",
+		PlayURL:       "https://www.w3schools.com/html/movie.mp4",
+		CoverURL:      "https://cdn.pixabay.com/photo/2016/03/27/18/10/bear-1283347_1280.jpg",
 		FavoriteCount: 0,
 		CommentCount:  0,
 		IsFavorite:    false,
 	},
 }
 
-var DemoComments = []Comment{
+var DemoComments = []models.Comment{
 	{
-		Id:         1,
-		User:       DemoUser,
-		Content:    "Test Comment",
-		CreateDate: "05-01",
+		CommonEntity: models.CommonEntity{Id: 1, CreateTime: time.Now()},
+		UserID:       1,
+		Content:      "Test Comment",
 	},
 }
 
-var DemoUser = User{
-	Id:            1,
+var DemoUser = models.User{
+	CommonEntity:  models.CommonEntity{Id: 1},
 	Name:          "TestUser",
 	FollowCount:   0,
 	FollowerCount: 0,
