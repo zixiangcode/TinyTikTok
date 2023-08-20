@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"TinyTikTok/models"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -19,9 +20,11 @@ func FavoriteAction(c *gin.Context) {
 // FavoriteList all users have same favorite video list
 func FavoriteList(c *gin.Context) {
 	c.JSON(http.StatusOK, VideoListResponse{
-		Response: Response{
+		Response: models.Response{
 			StatusCode: 0,
 		},
-		VideoList: DemoVideos,
+		VideoList: nil,
 	})
 }
+
+//喜欢
