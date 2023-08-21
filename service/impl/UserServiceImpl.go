@@ -46,6 +46,7 @@ func (userService UserServiceImpl) SaveUser(user models.User) (int64, error) {
 }
 
 func (userService UserServiceImpl) Register(username string, password string, context *gin.Context) error {
+	token := username + password
 	_, errName := userService.GetUserByName(username)
 	if errName == nil { // 为空说明查询没报错，也就是查到了，因此用户名重复
 		context.JSON(http.StatusBadRequest, models.UserLoginResponse{
@@ -62,6 +63,7 @@ func (userService UserServiceImpl) Register(username string, password string, co
 		CommonEntity: models.NewCommonEntity(),
 		Name:         username,
 		Password:     password,
+		Token:        token,
 	}
 
 	userID, err := userService.SaveUser(newUser) // 存到数据库中
