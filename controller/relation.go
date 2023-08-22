@@ -16,6 +16,7 @@ type UserListResponse struct {
 // RelationAction no practical effect, just check if token is valid
 func RelationAction(c *gin.Context) {
 	token := c.Query("token")
+	action_type, _ := strconv.Atoi(c.Query("action_type"))
 	user2Id, _ := strconv.Atoi(c.Query("to_user_id"))
 	user1, err := dao.FindUserByToken(token)
 	if err != nil {
@@ -27,10 +28,18 @@ func RelationAction(c *gin.Context) {
 		c.JSON(http.StatusOK, models.Response{StatusCode: 1, StatusMsg: "User2 doesn't exist"})
 		return
 	}
-	if err3 := dao.AddFollow(user1, user2); err3 == nil {
-		c.JSON(http.StatusOK, models.Response{StatusCode: 0})
-	} else {
-		c.JSON(http.StatusOK, models.Response{StatusCode: 1, StatusMsg: "add fail"})
+	if action_type == 1 {
+		if err3 := dao.AddFollow(user1, user2); err3 == nil {
+			c.JSON(http.StatusOK, models.Response{StatusCode: 0})
+		} else {
+			c.JSON(http.StatusOK, models.Response{StatusCode: 1, StatusMsg: "add fail"})
+		}
+	} else if action_type == 2 {
+		if err4 := dao.DelFollow(user1, user2); err4 == nil {
+			c.JSON(http.StatusOK, models.Response{StatusCode: 0})
+		} else {
+			c.JSON(http.StatusOK, models.Response{StatusCode: 1, StatusMsg: "delate fail"})
+		}
 	}
 }
 

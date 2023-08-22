@@ -4,6 +4,7 @@ import (
 	"TinyTikTok/db"
 	"TinyTikTok/models"
 	"errors"
+	"time"
 )
 
 func AddFollow(owner *models.User, Target *models.User) error {
@@ -14,6 +15,7 @@ func AddFollow(owner *models.User, Target *models.User) error {
 
 	relation.OwnerId = OwnerId
 	relation.TargetID = TargetId
+	relation.CreateTime = time.Now()
 	if t := db.GORM.Where("owner_id = ? and target_id = ?", OwnerId, TargetId).Find(&relation); t.RowsAffected != 0 {
 		tx.Rollback()
 		return errors.New("该关系已存在")
@@ -21,6 +23,27 @@ func AddFollow(owner *models.User, Target *models.User) error {
 	if t := tx.Create(&relation); t.RowsAffected == 0 {
 		tx.Rollback()
 		return errors.New("关注失败")
+	}
+
+	tx.Commit()
+	return nil
+}
+
+func DelFollow(owner *models.User, Target *models.User) error {
+	relation := models.Relation{}
+	tx := db.GORM.Begin()
+	OwnerId := owner.Id
+	TargetId := Target.Id
+
+	relation.OwnerId = OwnerId
+	relation.TargetID = TargetId
+	if t := db.GORM.Where("owner_id = ? and target_id = ?", OwnerId, TargetId).Find(&relation); t.RowsAffected == 0 {
+		tx.Rollback()
+		return errors.New("该关系不存在")
+	}
+	if t := tx.Where("owner_id = ? and target_id = ?", OwnerId, TargetId).Delete(&relation); t.RowsAffected == 0 {
+		tx.Rollback()
+		return errors.New("删除失败")
 	}
 
 	tx.Commit()
