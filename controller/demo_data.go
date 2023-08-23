@@ -16,8 +16,14 @@ var DemoVideos = []Video{
 	{
 		Id:            2,
 		Author:        DemoUser,
+<<<<<<< Updated upstream
 		PlayUrl:       "https://web-tlias-amireux.oss-cn-hangzhou.aliyuncs.com/2ef4e4b2-2a8b-4793-b745-6c0f9db5b593.mp4",
 		CoverUrl:      "https://cdn.pixabay.com/photo/2016/03/27/18/10/bear-1283347_1280.jpg",
+=======
+		//UserId: 1,
+		PlayURL:       "https://www.w3schools.com/html/movie.mp4",
+		CoverURL:      "https://cdn.pixabay.com/photo/2016/03/27/18/10/bear-1283347_1280.jpg",
+>>>>>>> Stashed changes
 		FavoriteCount: 0,
 		CommentCount:  0,
 		IsFavorite:    false,

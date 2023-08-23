@@ -27,6 +27,7 @@ func Publish(c *gin.Context) {
 	data, err := c.FormFile("data")//获取上传的数据
 	if err!=nil{
 		fmt.Printf("上传数据出现问题\n")
+<<<<<<< Updated upstream
 		c.JSON(http.StatusOK, Response{//返回错误信息
 			StatusCode: 1,
 			StatusMsg:  err.Error(),
@@ -74,14 +75,57 @@ func Publish(c *gin.Context) {
 			StatusCode: 1,
 			StatusMsg:  "该用户不存在",
 		})
+=======
+		c.JSON(http.StatusOK, models.Response{//返回错误信息
+			StatusCode: 1,
+			StatusMsg:  err.Error(),
+		})
+>>>>>>> Stashed changes
 		return
+	}else{
+		fmt.Println("上传没问题")
 	}
+	//获取视频名字
+	videoName := filepath.Base(data.Filename)
+	fmt.Println("视频文件的名字为",videoName)
 
+<<<<<<< Updated upstream
+=======
+
+	token:=c.PostForm("token")
+
+	fmt.Printf("id=%v  类型是%v\n",token,token)
+	//userId, err := strconv.ParseInt(token, 10, 64)//用户账号
+	if err!=nil{
+		fmt.Println("转化出问题了")
+	}
+	fmt.Println("用户账号是",token)
+	title := c.PostForm("title")
+	fmt.Println("标题是"+title)
+
+	//后期这里改成jwt解密
+	var userID int64
+	userID=1
+
+
+	fmt.Println("userID=",userID)
+
+
+	//获取接口
+	videoService := createVideoServiceImpl()
+
+
+
+>>>>>>> Stashed changes
 	//上传文件
 	err = videoService.Publish(data, userID, title)
 	if err != nil {
 		fmt.Printf("videoService.Publish(data, userId) 失败：%v\n", err)
+<<<<<<< Updated upstream
 		c.JSON(http.StatusOK, Response{
+=======
+		c.JSON(http.StatusOK, models.Response{
+>>>>>>> Stashed changes
 			StatusCode: 1,
 			StatusMsg:  err.Error(),
 		})

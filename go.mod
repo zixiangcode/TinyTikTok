@@ -4,11 +4,21 @@ go 1.17
 
 require (
 	github.com/aliyun/aliyun-oss-go-sdk v2.2.8+incompatible
+<<<<<<< Updated upstream
 	github.com/gavv/httpexpect/v2 v2.8.0
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-sql-driver/mysql v1.7.1
+=======
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/gavv/httpexpect/v2 v2.8.0
+	github.com/gin-gonic/gin v1.7.7
+	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
+>>>>>>> Stashed changes
 	github.com/savsgio/gotils v0.0.0-20210617111740-97865ed5a873
 	github.com/stretchr/testify v1.7.0
+	golang.org/x/crypto v0.0.0-20220427172511-eb4f295cb31f
+	gorm.io/driver/mysql v1.5.1
+	gorm.io/gorm v1.25.1
 )
 
 require (
@@ -46,8 +56,11 @@ require (
 	github.com/yalp/jsonpath v0.0.0-20180802001716-5cc68e5049a0 // indirect
 	github.com/yudai/gojsondiff v1.0.0 // indirect
 	github.com/yudai/golcs v0.0.0-20170316035057-ecda9a501e82 // indirect
+<<<<<<< Updated upstream
 	gocv.io/x/gocv v0.33.0 // indirect
 	golang.org/x/crypto v0.0.0-20220427172511-eb4f295cb31f // indirect
+=======
+>>>>>>> Stashed changes
 	golang.org/x/net v0.0.0-20220225172249-27dd8689420f // indirect
 	golang.org/x/sys v0.0.0-20220503163025-988cb79eb6c6 // indirect
 	golang.org/x/text v0.3.7 // indirect

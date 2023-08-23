@@ -3,6 +3,7 @@ package models
 import "time"
 
 type Video struct {
+<<<<<<< Updated upstream
 	//Id            int64  `json:"id,omitempty"`
 	CommonEntity
 	Author        User   `json:"author"`
@@ -45,4 +46,18 @@ var DemoUser = User{
 	FollowCount:   0,
 	FollowerCount: 0,
 	IsFollow:      false,
+=======
+	CommonEntity // 使用 CommonEntity 对象代替 ID
+
+	//ID            int64  `json:"id"`             // 视频唯一标识
+	CreateDate 	int64 `json:"create_date,omitempty"`
+	Author        User   `json:"author" gorm:"foreignKey:UserId;references:id"`                         // 视频作者信息
+	UserId 	int64	`json:"user_id " gorm:"column:user_id" `
+	CommentCount  int64  `json:"comment_count,omitempty"`            // 视频的评论总数
+	CoverURL      string `json:"cover_url,omitempty"`                // 视频封面地址
+	FavoriteCount int64  `json:"favorite_count,omitempty"`           // 视频的点赞总数
+	IsFavorite    bool   `json:"is_favorite,omitempty"`              // true-已点赞，false-未点赞
+	PlayURL       string `json:"play_url" json:"play_url,omitempty"` // 视频播放地址
+	Title         string `json:"title,omitempty"`                    // 视频标题
+>>>>>>> Stashed changes
 }
