@@ -3,7 +3,6 @@ package impl
 import (
 	"TinyTikTok/config"
 	"TinyTikTok/db"
-	"TinyTikTok/models"
 	"TinyTikTok/service"
 	"bytes"
 	"fmt"
@@ -168,9 +167,6 @@ func deleteFile(path string)error{
 }
 
 
-
-
-
 //获取图片的第一帧			返回错误和路径
 func GetImage(Filename string) (error,string){
 	videoURL := url+Filename+".mp4"
@@ -245,13 +241,17 @@ func InsertVideo(name string, userId int64, title string) error {
 	// 将Unix时间戳转换为整数
 	intValue := int(unixTime)
 
-	var count int64
 	//获得人数
-	result :=db.GetMysqlDB().Model(&models.Video{}).Count(&count).Error
-	if result!=nil{
-		log.Println(result)
+	//result :=db.GetMysqlDB().Model(&models.Video{}).Count(&count).Error
+	//if result!=nil{
+	//	log.Println(result)
+	//}
+	var count int64
+	err := db.GetMysql().QueryRow("SELECT COUNT(*) FROM videos").Scan(&count)
+	if err != nil {
+		log.Println(err)
 	}
-	count++;
+	count++
 	log.Println("count=",count)
 	//fmt.Println(user)
 	//video := models.Video{
@@ -287,9 +287,6 @@ func InsertVideo(name string, userId int64, title string) error {
 		i, _ := r.LastInsertId()
 		fmt.Printf("i: %v\n", i)
 	}
-
-
-
 
 	return nil
 

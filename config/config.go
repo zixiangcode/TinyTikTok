@@ -1,30 +1,23 @@
 package config
 
 import (
-	"database/sql"
+	"encoding/json"
+	"io/ioutil"
+	"log"
 )
 
-<<<<<<< Updated upstream
-var Db *sql.DB
-
-=======
 type Configuration struct {
 	Mysql string `json:"Mysql"`
 }
->>>>>>> Stashed changes
+
 const AccessKeyId = ""
 const AccessKeySecret = ""
 const  Endpoint = "https://oss-cn-hangzhou.aliyuncs.com" // OSS的访问域名   杭州
 
 const BucketName = "web-tlias-amireux"
-<<<<<<< Updated upstream
 
-=======
->>>>>>> Stashed changes
+var Config Configuration // 实例化一个 Configuration 类对象
 
-
-<<<<<<< Updated upstream
-=======
 // ReadConfig 读取配置文件
 func ReadConfig(fileName string) {
 	configFile, err := ioutil.ReadFile(fileName) // 读取文件内容并将其作为字节切片返回
@@ -36,6 +29,3 @@ func ReadConfig(fileName string) {
 		log.Fatalf("Error parsing config file: %v", err)
 	}
 }
-
-
->>>>>>> Stashed changes

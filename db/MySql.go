@@ -22,6 +22,7 @@ func CreateGORMDB() {
 	sqlDb.SetConnMaxLifetime(1 * time.Minute) // 最大生存时间
 
 	GORM = db // 赋值给全局变量 GORM
+
 	dsn := "root:123456@tcp(127.0.0.1:3306)/TinyTikTok?charset=utf8mb4&parseTime=True"
 	d, err := sql.Open("mysql", dsn)
 	Db = d
@@ -43,3 +44,4 @@ func GetMysqlDB() *gorm.DB {
 func GetMysql() *sql.DB {
 	return Db
 }
+

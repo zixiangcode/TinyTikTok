@@ -11,9 +11,9 @@ func FavoriteAction(c *gin.Context) {
 	token := c.Query("token")
 
 	if _, exist := usersLoginInfo[token]; exist {
-		c.JSON(http.StatusOK, Response{StatusCode: 0})
+		c.JSON(http.StatusOK, models.Response{StatusCode: 0})
 	} else {
-		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
+		c.JSON(http.StatusOK, models.Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
 	}
 }
 
@@ -23,8 +23,6 @@ func FavoriteList(c *gin.Context) {
 		Response: models.Response{
 			StatusCode: 0,
 		},
-		VideoList: nil,
+		VideoList: DemoVideos,
 	})
 }
-
-//喜欢
