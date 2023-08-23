@@ -15,5 +15,6 @@ type VideoService interface {
 
 	IsExist(userId int64)(bool,error)//查询用户是否存在
 
+
 }
 
