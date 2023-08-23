@@ -11,6 +11,7 @@ import (
 
 var GORM *gorm.DB
 var Db *sql.DB
+
 func CreateGORMDB() {
 	db, err := gorm.Open(mysql.Open(config.Config.Mysql), &gorm.Config{})
 	if err != nil {

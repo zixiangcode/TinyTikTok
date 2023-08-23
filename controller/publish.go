@@ -59,7 +59,6 @@ func Publish(c *gin.Context) {
 
 	fmt.Println("userID=",userID)
 
-
 	//获取接口
 	videoService := createVideoServiceImpl()
 
@@ -97,7 +96,6 @@ func Publish(c *gin.Context) {
 	}
 
 	fmt.Println("videoService.Publish(data, userId) 成功")
-
 	c.JSON(http.StatusOK, models.Response{
 		StatusCode: 0,
 		StatusMsg:  "uploaded successfully",
