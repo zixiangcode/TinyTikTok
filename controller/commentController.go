@@ -15,10 +15,12 @@ func CommentAction(c *gin.Context) { //添加或者删除评论操作
 
 	token := c.Query("token")
 	actionType := c.Query("action_type")
-	videoid := c.Query("video_id")
+	videoId := c.Query("video_id")
+	commentText := c.Query("comment_text")
+	commentId := c.Query("comment_id")
 
 	//验证请求是否错误
-	if actionType != "1" && actionType != "2" || videoid == "" {
+	if actionType != "1" && actionType != "2" || videoId == "" {
 		c.JSON(http.StatusBadRequest, models.Response{
 			StatusCode: 1,
 			StatusMsg:  "Invalid request",
@@ -26,8 +28,8 @@ func CommentAction(c *gin.Context) { //添加或者删除评论操作
 		return
 	}
 
-	//将videoid从String转换成Int64
-	videoID, err := strconv.ParseInt(videoid, 10, 64)
+	//将videoId从String转换成Int64
+	videoID, err := strconv.ParseInt(videoId, 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, models.Response{
 			StatusCode: 1,
@@ -50,7 +52,7 @@ func CommentAction(c *gin.Context) { //添加或者删除评论操作
 	//actionType为1，进行发表评论操作
 	if actionType == "1" {
 		//判断评论内容是否为空
-		if c.Query("comment_text") == "" {
+		if commentText == "" {
 			c.JSON(http.StatusBadRequest, models.Response{
 				StatusCode: 1,
 				StatusMsg:  "Comment text is empty",
@@ -62,7 +64,7 @@ func CommentAction(c *gin.Context) { //添加或者删除评论操作
 		comment := models.Comment{
 			VideoID:      videoID,
 			UserID:       userID,
-			Content:      c.Query("comment_text"),
+			Content:      commentText,
 			CommonEntity: models.CommonEntity{CreateTime: time.Now()},
 		}
 
@@ -83,7 +85,7 @@ func CommentAction(c *gin.Context) { //添加或者删除评论操作
 		return
 	} else if actionType == "2" { //删除评论操作
 		//actionType为2，删除评论操作需要comment_id
-		if c.Query("comment_id") == "" {
+		if commentId == "" {
 			c.JSON(http.StatusBadRequest, models.Response{
 				StatusCode: 1,
 				StatusMsg:  "Comment ID is required for action_type=2",
@@ -92,11 +94,11 @@ func CommentAction(c *gin.Context) { //添加或者删除评论操作
 		}
 
 		//将comment_id从String转换成Int64
-		commentID, err := strconv.ParseInt(c.Query("comment_id"), 10, 64)
+		commentID, err := strconv.ParseInt(commentId, 10, 64)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, models.Response{
 				StatusCode: 1,
-				StatusMsg:  "Invalid videoid",
+				StatusMsg:  "Invalid videoId",
 			})
 			return
 		}
@@ -120,13 +122,12 @@ func CommentAction(c *gin.Context) { //添加或者删除评论操作
 }
 
 func CommentList(c *gin.Context) { // 查询视频评论列表操作
-	videoid := c.Query("video_id")
-	//将videoid从String转换成Int64
-	videoID, err := strconv.ParseInt(videoid, 10, 64)
+	//将videoID从String转换成Int64
+	videoID, err := strconv.ParseInt(c.Query("video_id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, models.Response{
 			StatusCode: 1,
-			StatusMsg:  "Invalid videoid",
+			StatusMsg:  "Invalid videoId",
 		})
 		return
 	}
