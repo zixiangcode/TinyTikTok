@@ -77,6 +77,7 @@ func CommentAction(c *gin.Context) { //添加或者删除评论操作
 			})
 			return
 		}
+		log.Print("添加删除成功")
 		c.JSON(http.StatusOK, models.CommentActionResponse{
 			StatusCode: 0,
 			StatusMsg:  "Comment added successfully.",
@@ -140,6 +141,7 @@ func CommentList(c *gin.Context) { // 查询视频评论列表操作
 		})
 		return
 	}
+	log.Print("查询删除成功")
 	c.JSON(http.StatusOK, models.CommentListResponse{
 		StatusCode:  0,
 		StatusMsg:   "Success",

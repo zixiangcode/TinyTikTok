@@ -6,6 +6,8 @@ import (
 	"log"
 )
 
+const VideoCount = 5
+
 type Configuration struct {
 	Mysql string `json:"Mysql"`
 }
