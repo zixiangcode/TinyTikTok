@@ -11,9 +11,9 @@ func AddComment(comment models.Comment) (int64, error) {
 	return comment.Id, result.Error
 }
 
-func DeleteComment(commentID int64) error {
+func DeleteComment(commentID int64, userID int64) error {
 	result := db.GetMysqlDB().Model(&models.Comment{}).
-		Where("id = ?", commentID).
+		Where("id = ? AND user_id = ?", commentID, userID).
 		Update("is_deleted", 1)
 	return result.Error
 }
