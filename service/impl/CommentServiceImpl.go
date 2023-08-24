@@ -47,9 +47,9 @@ func (commentServiceImpl CommentServiceImpl) AddComment(comment models.Comment) 
 	return commentCommonResponse, nil
 }
 
-func (commentServiceImpl CommentServiceImpl) DeleteComment(commentID int64) error {
+func (commentServiceImpl CommentServiceImpl) DeleteComment(commentID int64, userID int64) error {
 
-	err := dao.DeleteComment(commentID)
+	err := dao.DeleteComment(commentID, userID)
 	if err != nil {
 		log.Printf("方法 DeleteComment() 失败 %v", err)
 		return err
