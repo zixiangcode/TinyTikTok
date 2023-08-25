@@ -3,6 +3,7 @@ package impl
 import (
 	"TinyTikTok/config"
 	"TinyTikTok/db"
+	"TinyTikTok/models"
 	"TinyTikTok/service"
 	"bytes"
 	"fmt"
@@ -292,3 +293,53 @@ func InsertVideo(name string, userId int64, title string) error {
 
 }
 
+
+func(videoService *VideoServiceImpl) ShowVideoList(userId int64) ([]models.Video, error){
+
+	videos, err := QueryVideosById(userId)
+	if err!=nil {
+		log.Println("查询失败,err=", err)
+		return nil, err
+	}
+	return videos,nil
+
+}
+
+func QueryVideosById(user_id int64)  ([]models.Video,error){		//根据用户名查询视频
+	var videos []models.Video
+	//var err error
+	//go func() {
+	//	err = db.GetMysqlDB().Preload("User", "id = tinytiktok.videos.user_id").Where("videos.user_id=?", user_id).Find(&videos).Error
+	//}()
+	//
+	//if err!=nil{
+	//	log.Println("查询语句出现了问题，err",err)
+	//	return nil,err
+	//}
+	//log.Println("查询没啥问题")
+	//log.Println(videos)
+	var tempint int
+
+ 	s := "select * from videos join user on tinytiktok.videos.user_id=user.id where user.id=?	 and tinytiktok.user.is_deleted=false"
+	r, err := db.GetMysql().Query(s,user_id)
+	fmt.Println("sql语句是",s)
+	var v models.Video
+	defer r.Close()
+	if err != nil {
+		fmt.Printf("err: %v\n", err)
+		return nil,err
+	} else {
+		for r.Next() {
+
+			r.Scan(&v.Id,&v.Author.Id,&v.PlayURL,&v.CoverURL,&v.FavoriteCount,&v.CommentCount,&v.IsFavorite,&v.Title,&v.CreateDate,&tempint,
+				&v.Author.Name,&v.Author.FollowCount,&v.Author.FollowerCount,&v.Author.IsFollow,&v.Author.Avatar,&v.Author.BackgroundImage,
+				&v.Author.Signature,&v.Author.TotalFavorited,&v.Author.WorkCount,&v.Author.FavoriteCount,&tempint,&tempint, &tempint)
+			log.Println(v)
+			videos=append(videos, v)
+		}
+	}
+	return videos,nil
+	defer r.Close()
+	return videos,nil
+
+}

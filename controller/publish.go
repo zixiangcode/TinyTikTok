@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"path/filepath"
+	"strconv"
 )
 
 type VideoListResponse struct {
@@ -104,10 +105,42 @@ func Publish(c *gin.Context) {
 
 // PublishList all users have same publish video list
 func PublishList(c *gin.Context) {
-	c.JSON(http.StatusOK, VideoListResponse{
-		Response: models.Response{
-			StatusCode: 0,
-		},
-		VideoList: DemoVideos,
-	})
+
+	//q := c.Query("token")
+	////TODO 利用jwt令牌将q给解密
+	//if q=="" {
+	//	c.JSON(http.StatusOK, VideoListResponse{
+	//		Response: models.Response{
+	//			StatusCode: 1,
+	//			StatusMsg:"当前用户不存在",
+	//		},
+	//		VideoList: nil,
+	//	})
+	//	return
+	//}
+	//username, err := strconv.ParseInt(q, 10, 64)
+	//if err!=nil {
+	//	log.Println("pushList to change err",err)
+	//}
+	query := c.Query("user_id")
+	username, err := strconv.ParseInt(query, 10, 64)
+	serviceImpl := createVideoServiceImpl()//创建接口
+	list, err := serviceImpl.ShowVideoList(username)
+	if err!=nil{
+		c.JSON(http.StatusOK, VideoListResponse{
+			Response: models.Response{
+				StatusMsg:"查询失败",
+				StatusCode: 1,
+			},
+			VideoList: nil,
+		})
+	}else{
+		c.JSON(http.StatusOK, VideoListResponse{
+			Response: models.Response{
+				StatusMsg:  "查询成功",
+				StatusCode: 0,
+			},
+			VideoList: list,
+		})
+	}
 }
