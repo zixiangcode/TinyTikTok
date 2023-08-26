@@ -5,6 +5,7 @@ import (
 	"TinyTikTok/service/impl"
 	"TinyTikTok/utils"
 	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -76,6 +77,7 @@ func CommentAction(c *gin.Context) { //添加或者删除评论操作
 			})
 			return
 		}
+		log.Print("添加删除成功")
 		c.JSON(http.StatusOK, models.CommentActionResponse{
 			StatusCode: 0,
 			StatusMsg:  "Comment added successfully.",
@@ -102,7 +104,7 @@ func CommentAction(c *gin.Context) { //添加或者删除评论操作
 			return
 		}
 		// 删除评论记录
-		err1 := impl.CommentServiceImpl{}.DeleteComment(commentID)
+		err1 := impl.CommentServiceImpl{}.DeleteComment(commentID, userID)
 		if err1 != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"status_code": 1,
@@ -110,7 +112,7 @@ func CommentAction(c *gin.Context) { //添加或者删除评论操作
 			})
 			return
 		}
-
+		log.Print("评论删除成功")
 		c.JSON(http.StatusOK, models.CommentListResponse{
 			StatusCode:  0,
 			StatusMsg:   "Comment deletion successful",
@@ -139,6 +141,7 @@ func CommentList(c *gin.Context) { // 查询视频评论列表操作
 		})
 		return
 	}
+	log.Print("查询删除成功")
 	c.JSON(http.StatusOK, models.CommentListResponse{
 		StatusCode:  0,
 		StatusMsg:   "Success",
