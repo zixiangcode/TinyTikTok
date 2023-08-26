@@ -28,4 +28,5 @@ func ReadConfig(fileName string) {
 	if err != nil {
 		log.Fatalf("Error parsing config file: %v", err)
 	}
+	
 }
