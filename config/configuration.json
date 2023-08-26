@@ -1,3 +1,3 @@
 {
-  "Mysql": "root:123456@tcp(10.10.26.241:3307)/tinytiktok?charset=utf8mb4&parseTime=True&loc=Local"
+  "Mysql": "root:123456@tcp(127.0.0.1:3306)/tinytiktok?charset=utf8mb4&parseTime=True&loc=Local"
 }

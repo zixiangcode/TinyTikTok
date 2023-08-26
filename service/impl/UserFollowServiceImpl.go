@@ -6,18 +6,15 @@ import (
 	"TinyTikTok/models"
 	"gorm.io/gorm"
 	"log"
-	"sync"
 )
 
 type UserFollowServiceImpl struct {
 }
 
 func (commentServiceImpl UserFollowServiceImpl) AddUserFollow(follow models.UserFollow) (err error) {
-	var mutex = &sync.Mutex{}
 	tx := db.GetMysqlDB().Begin()
 	isCommit := false
 	defer func() {
-		mutex.Unlock()
 		if isCommit {
 			tx.Commit()
 		} else {
@@ -54,7 +51,6 @@ func (commentServiceImpl UserFollowServiceImpl) AddUserFollow(follow models.User
 		return
 	}
 UpdateFollowTotalCount:
-	mutex.Lock()
 	// 关注总数加一
 	err = UserServiceImpl{}.UpdateFollowTotalCount(tx, follow.UserID, count)
 	if err != nil {
@@ -73,7 +69,7 @@ UpdateFollowTotalCount:
 	return
 }
 
-func (commentServiceImpl UserFollowServiceImpl) GetUserFollowByUserID(userID int64) (userFollowResps []models.UserFollowResp, err error) {
+func (commentServiceImpl UserFollowServiceImpl) GetUserFollowByUserID(userID int64) (userFollowResps []models.UserFollowResponse, err error) {
 	userFollows, err := dao.GetUserFollows(userID)
 	if len(userFollows) == 0 {
 		return
@@ -90,7 +86,7 @@ func (commentServiceImpl UserFollowServiceImpl) GetUserFollowByUserID(userID int
 	}
 
 	for _, user := range users {
-		userFollowResp := models.UserFollowResp{
+		userFollowResp := models.UserFollowResponse{
 			ID:              user.Id,
 			Name:            user.Name,
 			FollowCount:     user.FollowCount,
