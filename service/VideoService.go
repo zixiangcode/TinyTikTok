@@ -2,7 +2,7 @@ package service
 
 import (
 	"TinyTikTok/models"
-"mime/multipart"
+	"mime/multipart"
 )
 
 
@@ -13,7 +13,6 @@ type VideoService interface {
 
 	Publish(data *multipart.FileHeader, userId int64, title string)error//上传视频到服务端
 
-	IsExist(userId int64)(bool,error)//查询用户是否存在
 
 
 }

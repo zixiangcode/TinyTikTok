@@ -24,8 +24,7 @@ func CreateGORMDB() {
 
 	GORM = db // 赋值给全局变量 GORM
 
-	dsn := "root:123456@tcp(127.0.0.1:3306)/TinyTikTok?charset=utf8mb4&parseTime=True"
-	d, err := sql.Open("mysql", dsn)
+	d, err := sql.Open("mysql", config.Config.Mysql)
 	Db = d
 	if err != nil {
 		log.Println("初始化失败",err)

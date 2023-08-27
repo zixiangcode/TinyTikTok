@@ -5,6 +5,7 @@ import (
 	"TinyTikTok/service/impl"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -17,7 +18,7 @@ type VideoListResponse struct {
 
 
 
-func createVideoServiceImpl() impl.VideoServiceImpl { //创建一个视频流接口
+func GetVideoService() impl.VideoServiceImpl { //创建一个视频流接口
 	var VideoService impl.VideoServiceImpl
 	return VideoService
 }
@@ -26,7 +27,7 @@ func createVideoServiceImpl() impl.VideoServiceImpl { //创建一个视频流接
 func Publish(c *gin.Context) {
 	data, err := c.FormFile("data")//获取上传的数据
 	if err!=nil{
-		fmt.Printf("上传数据出现问题\n")
+		log.Printf("上传数据出现问题\n")
 
 		c.JSON(http.StatusOK, models.Response{//返回错误信息
 			StatusCode: 1,
@@ -34,34 +35,39 @@ func Publish(c *gin.Context) {
 		})
 		return
 	}else{
-		fmt.Println("上传没问题")
+		log.Println("上传没问题")
 	}
 	//获取视频名字
 	videoName := filepath.Base(data.Filename)
-	fmt.Println("视频文件的名字为",videoName)
+	log.Println("视频文件的名字为",videoName)
 
 
 	token:=c.PostForm("token")
 
-	fmt.Printf("id=%v  类型是%v\n",token,token)
+	//fmt.Printf("id=%v  类型是%v\n",token,token)
 	//userId, err := strconv.ParseInt(token, 10, 64)//用户账号
 	if err!=nil{
-		fmt.Println("转化出问题了")
+		//log.Println("转化出问题了")
+		c.JSON(http.StatusOK, models.Response{//返回错误信息
+			StatusCode: 1,
+			StatusMsg:  err.Error(),
+		})
+		return
 	}
 	fmt.Println("用户账号是",token)
 	title := c.PostForm("title")
 	fmt.Println("标题是"+title)
 
 	//后期这里改成jwt解密
-	//TODO 将截取的token转化为userid
+	//TODO 将截取的token转化为userID
 	var userID int64
-	userID=1
+	userID=2
 
 
 	fmt.Println("userID=",userID)
 
 	//获取接口
-	videoService := createVideoServiceImpl()
+	videoService := GetVideoService()
 
 	//exist, err := videoService.IsExist(userID)//查询用户是否存在
 	//if err!=nil {
@@ -95,8 +101,7 @@ func Publish(c *gin.Context) {
 		})
 		return
 	}
-
-	fmt.Println("videoService.Publish(data, userId) 成功")
+	//log.Println("videoService.Publish(data, userId) 成功")
 	c.JSON(http.StatusOK, models.Response{
 		StatusCode: 0,
 		StatusMsg:  "uploaded successfully",
@@ -107,7 +112,7 @@ func Publish(c *gin.Context) {
 func PublishList(c *gin.Context) {
 
 	//q := c.Query("token")
-	////TODO 利用jwt令牌将q给解密
+	//
 	//if q=="" {
 	//	c.JSON(http.StatusOK, VideoListResponse{
 	//		Response: models.Response{
@@ -122,9 +127,13 @@ func PublishList(c *gin.Context) {
 	//if err!=nil {
 	//	log.Println("pushList to change err",err)
 	//}
+
+	//获取user_id
 	query := c.Query("user_id")
 	username, err := strconv.ParseInt(query, 10, 64)
-	serviceImpl := createVideoServiceImpl()//创建接口
+	//var username int64
+	//username=1
+	serviceImpl := GetVideoService()//创建接口
 	list, err := serviceImpl.ShowVideoList(username)
 	if err!=nil{
 		c.JSON(http.StatusOK, VideoListResponse{
