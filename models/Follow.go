@@ -1,22 +1,18 @@
 package models
 
-import "time"
-
-// UserFollow 关注关系实体
-type UserFollow struct {
+// Follow 关注关系实体
+type Follow struct {
 	CommonEntity
-	UserID       int64     `json:"user_id"`        // 用户id
-	FollowUserID int64     `json:"follow_user_id"` // 关注用户ID
-	UpdateTime   time.Time `json:"create_date"`    // 更新时间
-	ActionType   int       `json:"action_type"`    // 1-关注，2-取消关注
+	UserId       int64 `json:"user_id"`
+	FollowUserId int64 `json:"follow_user_id"`
 }
 
-func (table *UserFollow) TableName() string {
-	return "user_follow"
+func (table *Follow) TableName() string {
+	return "follow"
 }
 
-// UserFollowResponse 关注操作请求参数
-type UserFollowResponse struct {
+// FollowResponse 关注操作请求参数
+type FollowResponse struct {
 	ID              int64  `json:"id"`               // 关注用户ID
 	Name            string `json:"name"`             // 用户名称
 	FollowCount     int64  `json:"follow_count"`     // 关注总数
@@ -30,8 +26,8 @@ type UserFollowResponse struct {
 	FavoriteCount   int64  `json:"favorite_count"`   // 喜欢数
 }
 
-type UserFollowListResponse struct {
-	StatusCode     int32                `json:"status_code"`
-	StatusMsg      string               `json:"status_msg"`
-	UserFollowResp []UserFollowResponse `json:"user_list"`
+type FollowListResponse struct {
+	StatusCode         int32  `json:"status_code"`
+	StatusMsg          string `json:"status_msg"`
+	UserFollowResponse []User `json:"user_list"`
 }

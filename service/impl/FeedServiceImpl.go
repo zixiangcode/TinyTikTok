@@ -58,10 +58,10 @@ func (feedServiceImpl FeedServiceImpl) GetFeedByLatestTime(timestamp int64) ([]m
 		}
 		commentCount := int64(len(comments))
 
-		//todo 查询每个video的点赞总数
+		// todo 查询每个video的点赞总数
 		favoriteCount := int64(1)
 
-		//todo 判断当前用户是否关注本条视频
+		// todo 判断当前用户是否关注本条视频
 		isFavorite := false
 
 		var feedResponseVideoInfo = models.FeedResponseVideoInfo{
