@@ -66,8 +66,8 @@ func (commentServiceImpl CommentServiceImpl) GetCommentsByVideoID(videoID int64)
 		return []models.CommentCommonResponse{}, err
 	}
 
-	var commentCommonResponses []models.CommentCommonResponse
-	for _, comment := range comments {
+	commentCommonResponses := make([]models.CommentCommonResponse, len(comments))
+	for k, comment := range comments {
 		//从comments中读取userID查询uesr信息，并拼接到response中
 		user, err := UserServiceImpl{}.GetUserById(comment.UserID)
 		if err != nil {
@@ -95,7 +95,7 @@ func (commentServiceImpl CommentServiceImpl) GetCommentsByVideoID(videoID int64)
 			Content:    comment.Content,
 			CreateTime: comment.CreateTime.Format("01-02"),
 		}
-		commentCommonResponses = append(commentCommonResponses, myComment)
+		commentCommonResponses[k] = myComment
 	}
 	return commentCommonResponses, nil
 }
