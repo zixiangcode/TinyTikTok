@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"TinyTikTok/dao"
 	"TinyTikTok/models"
 	"TinyTikTok/service/impl"
 	"github.com/gin-gonic/gin"
@@ -46,7 +47,10 @@ func Register(c *gin.Context) {
 		log.Printf("Register Error!")
 
 	}
-
+	err = dao.UpdateUserFollowByUserName(username)
+	if err != nil {
+		log.Printf("更新 user 表的 is_follow 属性列失败")
+	}
 	/*
 		token := username + password
 
@@ -77,6 +81,10 @@ func Login(c *gin.Context) {
 	err := impl.UserServiceImpl{}.Login(username, password, c)
 	if err != nil {
 		log.Printf("Login Error !")
+	}
+	err = dao.UpdateUserFollowByUserName(username)
+	if err != nil {
+		log.Printf("更新 user 表的 is_follow 属性列失败")
 	}
 	/*
 		token := username + password

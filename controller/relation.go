@@ -1,10 +1,12 @@
 package controller
 
 import (
+	"TinyTikTok/dao"
 	"TinyTikTok/models"
 	"TinyTikTok/service/impl"
 	"TinyTikTok/utils"
 	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
 	"strconv"
 )
@@ -71,6 +73,10 @@ func RelationAction(c *gin.Context) {
 			StatusMsg:  "关注/取关用户失败",
 		})
 		return
+	}
+	err = dao.UpdateUserFollowByUserId(userID)
+	if err != nil {
+		log.Printf("更新 user 表的 is_follow 属性列失败")
 	}
 
 	/*
