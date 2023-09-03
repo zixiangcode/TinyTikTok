@@ -8,3 +8,7 @@ type Message struct {
 	Content    string `json:"content,omitempty"`      // 消息内容
 	ToUserID   int64  `json:"to_user_id,omitempty"`   // 消息接收者id
 }
+
+func (table *Message) TableName() string {
+	return "messages"
+}

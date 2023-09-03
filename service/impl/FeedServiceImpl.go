@@ -89,6 +89,9 @@ func (feedServiceImpl FeedServiceImpl) GetFeedByLatestTime(timestamp int64) ([]m
 		feedResponseVideoInfos[k] = feedResponseVideoInfo
 	}
 	//获得下次查询视频的时间戳
-	nextTime := videos[len(videos)-1].CreateTime.Unix()
+	nextTime := time.Now().Unix()
+	if len(videos) != 0 {
+		nextTime = videos[len(videos)-1].CreateTime.Unix()
+	}
 	return feedResponseVideoInfos, nextTime, err
 }
