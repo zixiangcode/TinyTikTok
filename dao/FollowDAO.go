@@ -24,7 +24,7 @@ func UnFollowUser(db *gorm.DB, userId int64, toUserId int64) (err error) {
 		UserId:       userId,
 		FollowUserId: toUserId,
 	}
-	result := db.Model(&follow).Update("is_deleted", 1)
+	result := db.Model(&follow).Where(&follow).UpdateColumn("is_deleted", 1)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -37,8 +37,6 @@ func UnFollowUser(db *gorm.DB, userId int64, toUserId int64) (err error) {
 }
 
 // todo 热更新前端显示
-
-// todo 取消关注更新数据库
 
 // UpdateUserFollowByUserName 通过用户名更新 user 表的 is_follow 属性列
 func UpdateUserFollowByUserName(username string) (err error) {

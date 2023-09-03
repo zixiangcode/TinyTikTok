@@ -68,7 +68,7 @@ func RelationAction(c *gin.Context) {
 
 	errFollow := GetRelationServiceImpl().FollowUser(userID, followUserID, actionType)
 	if errFollow != nil {
-		c.JSON(http.StatusInternalServerError, models.Response{
+		c.JSON(http.StatusBadRequest, models.Response{
 			StatusCode: 1,
 			StatusMsg:  "关注/取关用户失败",
 		})
