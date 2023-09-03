@@ -37,7 +37,7 @@ func Feed(c *gin.Context) {
 		return
 	}
 
-	//查询视video及user信息
+	//查询视频video及user信息
 	feedResponseVideoInfos, nextTime, err := impl.FeedServiceImpl{}.GetFeedByLatestTime(latestTime)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
