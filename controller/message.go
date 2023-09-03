@@ -2,12 +2,10 @@ package controller
 
 import (
 	"TinyTikTok/models"
-	"fmt"
+	"TinyTikTok/service/impl"
+	"TinyTikTok/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"strconv"
-	"sync/atomic"
-	"time"
 )
 
 var tempChat = map[string][]models.Message{}
@@ -24,27 +22,43 @@ func MessageAction(c *gin.Context) {
 	token := c.Query("token")
 	toUserId := c.Query("to_user_id")
 	content := c.Query("content")
+	actionType := c.Query("action_type")
 
-	if user, exist := usersLoginInfo[token]; exist {
-		userIdB, _ := strconv.Atoi(toUserId)
-		chatKey := genChatKey(user.Id, int64(userIdB))
-
-		atomic.AddInt64(&messageIdSequence, 1)
-
-		curMessage := models.Message{
-			CommonEntity: models.CommonEntity{Id: messageIdSequence, CreateTime: time.Now()},
-			Content:      content,
-		}
-
-		if messages, exist := tempChat[chatKey]; exist {
-			tempChat[chatKey] = append(messages, curMessage)
-		} else {
-			tempChat[chatKey] = []models.Message{curMessage}
-		}
-		c.JSON(http.StatusOK, models.Response{StatusCode: 0})
-	} else {
-		c.JSON(http.StatusOK, models.Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
+	//验证token
+	userClaims, err := utils.ParseToken(token)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, models.Response{
+			StatusCode: 1,
+			StatusMsg:  "Unauthorized",
+		})
 	}
+
+	// 从 userClaims 中获取 UserID
+	userID := userClaims.JWTCommonEntity.Id
+
+	//验证请求是否合法
+	if toUserId == "" || content == "" || actionType != "1" {
+		c.JSON(http.StatusBadRequest, models.Response{
+			StatusCode: 1,
+			StatusMsg:  "Invalid request",
+		})
+		return
+	}
+
+	err1 := impl.MessageServiceImpl{}.SendMessage(toUserId, userID, content)
+	if err1 != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status_code": 1,
+			"status_msg":  "Failed to send message",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status_code": 0,
+		"status_msg":  "Message sent successfully!",
+	})
+	return
 }
 
 // MessageChat all users have same follow list
@@ -52,19 +66,32 @@ func MessageChat(c *gin.Context) {
 	token := c.Query("token")
 	toUserId := c.Query("to_user_id")
 
-	if user, exist := usersLoginInfo[token]; exist {
-		userIdB, _ := strconv.Atoi(toUserId)
-		chatKey := genChatKey(user.Id, int64(userIdB))
-
-		c.JSON(http.StatusOK, ChatResponse{Response: models.Response{StatusCode: 0}, MessageList: tempChat[chatKey]})
-	} else {
-		c.JSON(http.StatusOK, models.Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
+	//验证token
+	userClaims, err := utils.ParseToken(token)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, models.Response{
+			StatusCode: 1,
+			StatusMsg:  "Unauthorized",
+		})
 	}
-}
 
-func genChatKey(userIdA int64, userIdB int64) string {
-	if userIdA > userIdB {
-		return fmt.Sprintf("%d_%d", userIdB, userIdA)
+	// 从 userClaims 中获取 UserID
+	userID := userClaims.JWTCommonEntity.Id
+
+	//查询聊天消息
+	MessageResponseList, err := impl.MessageServiceImpl{}.GetMessages(userID, toUserId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status_code": 1,
+			"status_msg":  "Failed to loading messages",
+		})
+		return
 	}
-	return fmt.Sprintf("%d_%d", userIdA, userIdB)
+
+	c.JSON(http.StatusOK, models.MessageResponseList{
+		StatusCode:          0,
+		StatusMsg:           "Message loading successfully!",
+		MessageResponseList: MessageResponseList,
+	})
+
 }
