@@ -24,13 +24,6 @@ func GetRelationServiceImpl() RelationServiceImpl {
 	return relationServiceImpl
 }
 
-// 通过关注用户 id 和被关注用户 id 查询关注关系
-func getFollowByUserIdAndToUserId(userId int64, toUserId int64) (*models.Follow, error) {
-	result := &models.Follow{}
-	err := db.GetMysqlDB().Model(models.Follow{}).Where("user_id = ? AND follow_user_id = ? AND is_deleted = ?", userId, toUserId, 0).Find(&result).Error
-	return result, err
-}
-
 // FollowUser 关注用户
 func (relationServiceImpl RelationServiceImpl) FollowUser(userId int64, toUserId int64, actionType int) error {
 	tx := db.GetMysqlDB().Begin()
@@ -48,7 +41,7 @@ func (relationServiceImpl RelationServiceImpl) FollowUser(userId int64, toUserId
 	}
 
 	if actionType == 1 {
-		exists, err := getFollowByUserIdAndToUserId(userId, toUserId)
+		exists, err := dao.GetFollowByUserIdAndToUserId(userId, toUserId)
 		count := 1 // 对用户关注总量的影响
 		if err != nil {
 			log.Printf("查询关注记录发生异常 = %v", err)
@@ -80,7 +73,7 @@ func (relationServiceImpl RelationServiceImpl) FollowUser(userId int64, toUserId
 			return err3
 		}
 	} else if actionType == 2 {
-		exists, err := getFollowByUserIdAndToUserId(userId, toUserId)
+		exists, err := dao.GetFollowByUserIdAndToUserId(userId, toUserId)
 		count := -1 // 取消关注对关注总量的影响
 		if err != nil {
 			log.Printf("查询关注记录发生异常 = %v", err)
