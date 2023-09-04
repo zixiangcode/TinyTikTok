@@ -3,6 +3,7 @@ package controller
 import (
 	"TinyTikTok/models"
 	"TinyTikTok/service/impl"
+	"TinyTikTok/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -25,6 +26,20 @@ func Feed(c *gin.Context) {
 */
 
 func Feed(c *gin.Context) {
+	token := c.Query("token")
+	var userID int64 = 0
+	//如果token不为空，需验证token
+	if token != "" {
+		userClaims, err := utils.ParseToken(token)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, models.Response{
+				StatusCode: 1,
+				StatusMsg:  "Unauthorized",
+			})
+		}
+		// 从 userClaims 中获取 UserID
+		userID = userClaims.JWTCommonEntity.Id
+	}
 
 	//获取请求中的时间参数，如果没有，就将当前时间赋值给查询条件
 	lastTime := c.Query("latest_time")
@@ -38,7 +53,7 @@ func Feed(c *gin.Context) {
 	}
 
 	//查询视频video及user信息
-	feedResponseVideoInfos, nextTime, err := impl.FeedServiceImpl{}.GetFeedByLatestTime(latestTime)
+	feedResponseVideoInfos, nextTime, err := impl.FeedServiceImpl{}.GetFeedByLatestTime(latestTime, userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"status_code": 1,

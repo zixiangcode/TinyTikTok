@@ -150,6 +150,7 @@ func FollowerList(c *gin.Context) {
 	c.JSON(http.StatusOK, UserListResponse{
 		Response: models.Response{
 			StatusCode: 0,
+			StatusMsg:  "success",
 		},
 		UserList: []models.User{DemoUser},
 	})

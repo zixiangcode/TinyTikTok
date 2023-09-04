@@ -47,9 +47,16 @@ func (commentServiceImpl CommentServiceImpl) AddComment(comment models.Comment) 
 	return commentCommonResponse, nil
 }
 
-func (commentServiceImpl CommentServiceImpl) DeleteComment(commentID int64, userID int64) error {
+func (commentServiceImpl CommentServiceImpl) DeleteComment(commentID int64, userID int64, videoID int64) error {
 
-	err := dao.DeleteComment(commentID, userID)
+	//判断评论是否已删除，如果已删除就不修改videos中的comment_count
+	comment, err := dao.GetCommentByID(commentID)
+	if err != nil || (comment == models.Comment{}) { //返回未空，就不用删除评论，不用修改comment_count
+		log.Printf("方法 DeleteComment() 失败 %v", err)
+		return err
+	}
+
+	err = dao.DeleteComment(commentID, userID, videoID)
 	if err != nil {
 		log.Printf("方法 DeleteComment() 失败 %v", err)
 		return err

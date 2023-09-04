@@ -100,10 +100,46 @@ func FavoriteAction(c *gin.Context) {
 
 // FavoriteList all users have same favorite video list
 func FavoriteList(c *gin.Context) {
-	c.JSON(http.StatusOK, VideoListResponse{
-		Response: models.Response{
-			StatusCode: 0,
-		},
-		VideoList: DemoVideos,
+	token := c.Query("token")
+	//未使用到userIdStr，因为App发出的请求的userId会是当前视频作者的id,与token解析的ID不一致,查询点赞视频以token为准
+	//userIdStr := c.Query("user_id")
+
+	//验证token,app会在未登录的情况下载首页访问点赞列表，导致报错。
+	//因此当token为空时，返回空数据
+	if token == "" {
+		c.JSON(http.StatusOK, models.FavoriteListResponse{
+			StatusCode: "0",
+			StatusMsg:  "success",
+			VideoList:  []models.FavoriteVideoInfo{},
+		})
+		return
+	}
+
+	userClaims, err := utils.ParseToken(token)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, models.Response{
+			StatusCode: 1,
+			StatusMsg:  "Unauthorized",
+		})
+		return
+	}
+	userID := userClaims.JWTCommonEntity.Id
+
+	//调用GetFavoriteRelationListByUserID函数添加点赞信息
+	favoriteListResponse, err := impl.FavoriteRelationServiceImpl{}.GetFavoriteRelationListByUserID(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status_code": 1,
+			"status_msg":  "Failed to like",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, models.FavoriteListResponse{
+		StatusCode: "0",
+		StatusMsg:  "success",
+		VideoList:  favoriteListResponse,
 	})
+	return
+
 }

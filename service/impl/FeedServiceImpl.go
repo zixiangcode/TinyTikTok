@@ -30,7 +30,7 @@ func (feedServiceImpl FeedServiceImpl) GetFeedLatestTime(lastTime string) (int64
 	return time.Now().Unix(), nil
 }
 
-func (feedServiceImpl FeedServiceImpl) GetFeedByLatestTime(timestamp int64) ([]models.FeedResponseVideoInfo, int64, error) {
+func (feedServiceImpl FeedServiceImpl) GetFeedByLatestTime(timestamp int64, userID int64) ([]models.FeedResponseVideoInfo, int64, error) {
 
 	//将时间戳格式数据改为time.Time格式
 	latestTime := time.Unix(timestamp, 0)
@@ -57,13 +57,6 @@ func (feedServiceImpl FeedServiceImpl) GetFeedByLatestTime(timestamp int64) ([]m
 			return []models.FeedResponseVideoInfo{}, 0, err
 		}
 		commentCount := int64(len(comments))
-
-		// todo 查询每个video的点赞总数
-		favoriteCount := int64(1)
-
-		// todo 判断当前用户是否关注本条视频
-		isFavorite := false
-
 		var feedResponseVideoInfo = models.FeedResponseVideoInfo{
 			Author: models.FeedUserInfo{
 				Avatar:          user.Avatar,
@@ -80,9 +73,9 @@ func (feedServiceImpl FeedServiceImpl) GetFeedByLatestTime(timestamp int64) ([]m
 			},
 			CommentCount:  commentCount,
 			CoverURL:      video.CoverURL,
-			FavoriteCount: favoriteCount,
+			FavoriteCount: video.FavoriteCount,
 			ID:            video.Id,
-			IsFavorite:    isFavorite,
+			IsFavorite:    FavoriteRelationServiceImpl{}.IsFavorite(userID, video.Id),
 			PlayURL:       video.PlayURL,
 			Title:         video.Title,
 		}
