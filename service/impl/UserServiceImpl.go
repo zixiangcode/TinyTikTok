@@ -128,7 +128,7 @@ func (userService UserServiceImpl) UserInfo(userId int64, token string) (*models
 }
 
 func (userService UserServiceImpl) GetUserByIds(userIDs []int64) (users []models.User, err error) {
-	err = db.GetMysqlDB().Where("id in  (?)", userIDs).Find(&users).Error
+	err = db.GetMysqlDB().Where("id in (?)", userIDs).Find(&users).Error
 	if err != nil {
 		log.Printf("方法 GetUserById() 失败 %v", err)
 		return
@@ -136,7 +136,7 @@ func (userService UserServiceImpl) GetUserByIds(userIDs []int64) (users []models
 	return
 }
 
-//UpdateFollowTotalCount 更新数据关注总数
+// UpdateFollowTotalCount 更新数据关注总数
 func (userService UserServiceImpl) UpdateFollowTotalCount(db *gorm.DB, userID int64, count int) (err error) {
 	err = db.Model(&models.User{}).Where("id = ?", userID).Update("follow_count", gorm.Expr("follow_count + ? ", count)).Error
 	if err != nil {
@@ -146,7 +146,7 @@ func (userService UserServiceImpl) UpdateFollowTotalCount(db *gorm.DB, userID in
 	return
 }
 
-//UpdateFollowerTotalCount 更新用户粉丝数
+// UpdateFollowerTotalCount 更新用户粉丝数
 func (userService UserServiceImpl) UpdateFollowerTotalCount(db *gorm.DB, userID int64, count int) (err error) {
 	err = db.Model(&models.User{}).Where("id = ?", userID).Update("follower_count", gorm.Expr("follower_count + ? ", count)).Error
 	if err != nil {
