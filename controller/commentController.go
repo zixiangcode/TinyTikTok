@@ -77,7 +77,7 @@ func CommentAction(c *gin.Context) { //添加或者删除评论操作
 			})
 			return
 		}
-		log.Print("添加删除成功")
+		log.Print("添加评论成功")
 		c.JSON(http.StatusOK, models.CommentActionResponse{
 			StatusCode: 0,
 			StatusMsg:  "Comment added successfully.",
@@ -104,7 +104,7 @@ func CommentAction(c *gin.Context) { //添加或者删除评论操作
 			return
 		}
 		// 删除评论记录
-		err1 := impl.CommentServiceImpl{}.DeleteComment(commentID, userID)
+		err1 := impl.CommentServiceImpl{}.DeleteComment(commentID, userID, videoID)
 		if err1 != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"status_code": 1,
@@ -141,7 +141,7 @@ func CommentList(c *gin.Context) { // 查询视频评论列表操作
 		})
 		return
 	}
-	log.Print("查询删除成功")
+	log.Print("查询评论成功")
 	c.JSON(http.StatusOK, models.CommentListResponse{
 		StatusCode:  0,
 		StatusMsg:   "Success",

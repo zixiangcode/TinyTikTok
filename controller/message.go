@@ -6,6 +6,7 @@ import (
 	"TinyTikTok/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 )
 
 // MessageAction no practical effect, just check if token is valid
@@ -27,8 +28,9 @@ func MessageAction(c *gin.Context) {
 	// 从 userClaims 中获取 UserID
 	userID := userClaims.JWTCommonEntity.Id
 
-	//验证请求是否合法
-	if toUserId == "" || content == "" || actionType != "1" {
+	//将toUserid从String转换成Int64
+	toUserID, err := strconv.ParseInt(toUserId, 10, 64)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, models.Response{
 			StatusCode: 1,
 			StatusMsg:  "Invalid request",
@@ -36,7 +38,16 @@ func MessageAction(c *gin.Context) {
 		return
 	}
 
-	err1 := impl.MessageServiceImpl{}.SendMessage(toUserId, userID, content)
+	//验证请求是否合法
+	if toUserId == "" || content == "" || actionType != "1" || userID == toUserID {
+		c.JSON(http.StatusBadRequest, models.Response{
+			StatusCode: 1,
+			StatusMsg:  "Invalid request",
+		})
+		return
+	}
+
+	err1 := impl.MessageServiceImpl{}.SendMessage(toUserID, userID, content)
 	if err1 != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"status_code": 1,
