@@ -11,14 +11,9 @@ import (
 type MessageServiceImpl struct {
 }
 
-func (messageServiceImpl MessageServiceImpl) SendMessage(toUserid string, fromUserId int64, content string) error {
+func (messageServiceImpl MessageServiceImpl) SendMessage(toUserId int64, fromUserId int64, content string) error {
 
-	//将toUserid从String转换成Int64
-	toUserId, err := strconv.ParseInt(toUserid, 10, 64)
-	if err != nil {
-		log.Printf("toUserid从String转换成Int64失败 %v", err)
-		return err
-	}
+	//todo 应在存入数据库之前验证发送者与接收者是否为朋友关系
 
 	//准备储存到数据库中的数据
 	var message = models.Message{
