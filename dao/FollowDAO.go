@@ -9,8 +9,8 @@ import (
 )
 
 // GetFollowByUserIdAndToUserId 通过关注用户 id 和被关注用户 id 查询关注关系
-func GetFollowByUserIdAndToUserId(userId int64, toUserId int64) (*models.Follow, error) {
-	result := &models.Follow{}
+func GetFollowByUserIdAndToUserId(userId int64, toUserId int64) (models.Follow, error) {
+	result := models.Follow{}
 	err := db.GetMysqlDB().Model(models.Follow{}).Where("user_id = ? AND follow_user_id = ? AND is_deleted = ?", userId, toUserId, 0).Find(&result).Error
 	return result, err
 }
@@ -23,19 +23,22 @@ func FollowUser(db *gorm.DB, userId int64, toUserId int64) (err error) {
 		return err
 	}
 	// 如果已经存在此关注关系，则将 is_deleted 置为 0
-	if follow != nil {
+	if follow != (models.Follow{}) {
 		err = db.Model(&models.Follow{}).Where("user_id = ? AND follow_user_id = ?", userId, toUserId).Update("is_deleted", 0).Error
 		if err != nil {
 			log.Printf("更新关注关系失败")
 			return err
 		}
 	} else {
-		follow = &models.Follow{
+		follow = models.Follow{
 			CommonEntity: models.NewCommonEntity(),
 			UserId:       userId,
 			FollowUserId: toUserId,
 		}
-		err = db.Create(&follow).Error
+		if err := db.Create(&follow).Error; err != nil {
+			log.Printf("添加关注关系失败: %s", err.Error())
+			return err
+		}
 	}
 
 	return err
