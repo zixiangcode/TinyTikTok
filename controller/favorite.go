@@ -101,11 +101,20 @@ func FavoriteAction(c *gin.Context) {
 // FavoriteList all users have same favorite video list
 func FavoriteList(c *gin.Context) {
 	token := c.Query("token")
-	//未使用到userIdStr，因为App发出的请求的userId会是当前视频作者的id,与token解析的ID不一致,查询点赞视频以token为准
-	//userIdStr := c.Query("user_id")
+	//userId是当前观看视频作者的id,用于刷视频时左滑展示作者的作品及点赞的视频,token仅用于验证是否登录
+	userIdStr := c.Query("user_id")
 
-	//验证token,app会在未登录的情况下载首页访问点赞列表，导致报错。
-	//因此当token为空时，返回空数据
+	//将userIdStr从String转换成Int64
+	userId, err := strconv.ParseInt(userIdStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.Response{
+			StatusCode: 1,
+			StatusMsg:  "Invalid videoid",
+		})
+		return
+	}
+
+	//验证token，当token为空时，代表用户未登录，返回空数据
 	if token == "" {
 		c.JSON(http.StatusOK, models.FavoriteListResponse{
 			StatusCode: "0",
@@ -115,7 +124,7 @@ func FavoriteList(c *gin.Context) {
 		return
 	}
 
-	userClaims, err := utils.ParseToken(token)
+	_, err = utils.ParseToken(token)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, models.Response{
 			StatusCode: 1,
@@ -123,21 +132,20 @@ func FavoriteList(c *gin.Context) {
 		})
 		return
 	}
-	userID := userClaims.JWTCommonEntity.Id
 
 	//调用GetFavoriteRelationListByUserID函数添加点赞信息
-	favoriteListResponse, err := impl.FavoriteRelationServiceImpl{}.GetFavoriteRelationListByUserID(userID)
+	favoriteListResponse, err := impl.FavoriteRelationServiceImpl{}.GetFavoriteRelationListByUserID(userId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"status_code": 1,
-			"status_msg":  "Failed to like",
+			"status_msg":  "Failed to load like list!",
 		})
 		return
 	}
 
 	c.JSON(http.StatusOK, models.FavoriteListResponse{
 		StatusCode: "0",
-		StatusMsg:  "success",
+		StatusMsg:  "Loaded like list successfully!",
 		VideoList:  favoriteListResponse,
 	})
 	return
