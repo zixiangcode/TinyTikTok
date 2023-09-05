@@ -4,8 +4,11 @@ go 1.17
 
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/aliyun/aliyun-oss-go-sdk v2.2.8+incompatible
 	github.com/gavv/httpexpect/v2 v2.8.0
 	github.com/gin-gonic/gin v1.7.7
+	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
+	github.com/savsgio/gotils v0.0.0-20210617111740-97865ed5a873
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/crypto v0.0.0-20220427172511-eb4f295cb31f
 	gorm.io/driver/mysql v1.5.1
@@ -24,6 +27,7 @@ require (
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
+	github.com/google/uuid v1.2.0 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/imkira/go-interpol v1.1.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
@@ -50,6 +54,7 @@ require (
 	golang.org/x/net v0.0.0-20220225172249-27dd8689420f // indirect
 	golang.org/x/sys v0.0.0-20220503163025-988cb79eb6c6 // indirect
 	golang.org/x/text v0.3.7 // indirect
+	golang.org/x/time v0.3.0 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect

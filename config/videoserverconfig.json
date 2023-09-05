@@ -1,0 +1,7 @@
+{
+  "AccessKeyId": "",
+  "AccessKeySecret" : "",
+  "Endpoint" : "https://oss-cn-hangzhou.aliyuncs.com",
+  "BucketName": "web-tlias-amireux",
+  "url":"https://web-tlias-amireux.oss-cn-hangzhou.aliyuncs.com/"
+}
