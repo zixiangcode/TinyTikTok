@@ -6,6 +6,7 @@ import (
 	"TinyTikTok/models"
 	"TinyTikTok/service"
 	"TinyTikTok/utils"
+	"database/sql"
 	"fmt"
 	"time"
 
@@ -25,43 +26,40 @@ import (
 ////const url = "https://"+config.BucketName +".oss-cn-hangzhou.aliyuncs.com/"
 // url = "https://"+config.Config.BucketName +".oss-cn-hangzhou.aliyuncs.com/"
 
-
 type VideoServiceImpl struct {
 	service.VideoService
 }
-
 
 // Publish
 // 将传入的视频流保存在服务器中，并将链接存储在mysql表中
 func (videoService *VideoServiceImpl) Publish(data *multipart.FileHeader, userId int64, title string) error {
 
-
-
 	fmt.Println("方法data.Open() 成功")
 	//fmt.Println("文件名字叫做",file)
 	//生成一个uuid作为视频的名字
 	videoName := uuid.V4()
-	fmt.Println("视频的名字叫做",videoName)
+	fmt.Println("视频的名字叫做", videoName)
 
 	//上传视频
-	utils.UploadToServer(data,videoName)
+	err := utils.UploadToServer(data, videoName)
+	if err != nil {
+		return err
+	}
 
 	//videoName是视频名字		userid是用户id  title是文章的标题
-	err := SaveVideo(videoName,userId,title)
-	if err!=nil{
+	err = SaveVideo(videoName, userId, title)
+	if err != nil {
 		log.Println("新的数据插入失败")
 		return err
-	}else{
+	} else {
 		log.Println("新的数据插入成功")
 	}
 	return nil
 
 }
 
-
-//将视频的数据插入到数据库里面
+// SaveVideo 将视频的数据插入到数据库里面
 func SaveVideo(name string, userId int64, title string) error {
-
 
 	currentTime := time.Now()
 
@@ -72,8 +70,8 @@ func SaveVideo(name string, userId int64, title string) error {
 	intValue := int(unixTime)
 	var count int64
 	//获得人数
-	result :=db.GetMysqlDB().Model(&models.Video{}).Count(&count).Error
-	if result!=nil{
+	result := db.GetMysqlDB().Model(&models.Video{}).Count(&count).Error
+	if result != nil {
 		log.Println(result)
 	}
 
@@ -82,7 +80,7 @@ func SaveVideo(name string, userId int64, title string) error {
 	//	log.Println(err)
 	//}
 	count++
-	log.Println("count=",count)
+	log.Println("count=", count)
 	//fmt.Println(user)
 	//video := models.Video{
 	//	//CommonEntity: entity,
@@ -107,7 +105,7 @@ func SaveVideo(name string, userId int64, title string) error {
 	//}
 	//上面这个版本不知道为啥会导致内存泄露
 	s := "insert into videos(id ,user_id,play_url,cover_url,favorite_count,comment_count,is_favorite,title,create_date) values (?,?,?,?,?,?,?,?,?) "
-	r, err := db.GetMysql().Exec(s, count,userId, config.VideoConfig.Url+name+".mp4",config.VideoConfig.Url+name+".jpg",0,0,false,title,int64(intValue))
+	r, err := db.GetMysql().Exec(s, count, userId, config.VideoConfig.Url+name+".mp4", config.VideoConfig.Url+name+".jpg", 0, 0, false, title, int64(intValue))
 
 	if err != nil {
 		// fmt.Println("插入出现问题")
@@ -117,29 +115,29 @@ func SaveVideo(name string, userId int64, title string) error {
 		i, _ := r.LastInsertId()
 		fmt.Printf("i: %v\n", i)
 	}
-	s="update user set work_count=work_count+1 where id=?"
+	s = "update user set work_count=work_count+1 where id=?"
 	r, err = db.GetMysql().Exec(s, userId)
-	if err!=nil {
-		fmt.Println("更新失败,err",err)
+	if err != nil {
+		fmt.Println("更新失败,err", err)
 		return err
 	}
 	return nil
 
 }
 
-
-func(videoService *VideoServiceImpl) ShowVideoList(userId int64) ([]models.Video, error){
+func (videoService *VideoServiceImpl) ShowVideoList(userId int64) ([]models.Video, error) {
 
 	videos, err := QueryVideosById(userId)
-	if err!=nil {
+	if err != nil {
 		log.Println("查询失败,err=", err)
 		return nil, err
 	}
-	return videos,nil
+	return videos, nil
 
 }
-//根据用户id查询视频
-func QueryVideosById(user_id int64)  ([]models.Video,error){
+
+// QueryVideosById 根据用户id查询视频
+func QueryVideosById(user_id int64) ([]models.Video, error) {
 	var videos []models.Video
 	//var err error
 	//	err = db.GetMysqlDB().Preload("User", "id = tinytiktok.videos.user_id").Where("videos.user_id=?", user_id).Find(&videos).Error
@@ -151,28 +149,38 @@ func QueryVideosById(user_id int64)  ([]models.Video,error){
 	//log.Println(videos)
 	//上面的代码会导致Video未提前加载，如果写preload("Video")则会出现未提前加载User  死锁了属于是
 
-
-	var tempint int//用于接收没用的变量
+	var tempint int //用于接收没用的变量
 
 	s := "select * from videos join user on tinytiktok.videos.user_id=user.id where user.id=?	 and tinytiktok.user.is_deleted=false"
-	r, err := db.GetMysql().Query(s,user_id)
-	fmt.Println("sql语句是",s)
+	r, err := db.GetMysql().Query(s, user_id)
+	fmt.Println("sql语句是", s)
 	var v models.Video
-	defer r.Close()
+	defer func(r *sql.Rows) {
+		err := r.Close()
+		if err != nil {
+
+		}
+	}(r)
 	if err != nil {
 		fmt.Printf("err: %v\n", err)
-		return nil,err
+		return nil, err
 	} else {
 		for r.Next() {
 
-			r.Scan(&v.Id,&v.Author.Id,&v.PlayURL,&v.CoverURL,&v.FavoriteCount,&v.CommentCount,&v.IsFavorite,&v.Title,&v.CreateDate,&tempint,
-				&v.Author.Name,&v.Author.FollowCount,&v.Author.FollowerCount,&v.Author.IsFollow,&v.Author.Avatar,&v.Author.BackgroundImage,
-				&v.Author.Signature,&v.Author.TotalFavorited,&v.Author.WorkCount,&v.Author.FavoriteCount,&tempint,&tempint, &tempint)
+			err := r.Scan(&v.Id, &v.AuthorID, &v.PlayURL, &v.CoverURL, &v.FavoriteCount, &v.CommentCount, &v.Title, &v.CreateTime, &tempint, &tempint, &tempint, &tempint)
+			if err != nil {
+				return nil, err
+			}
 			//log.Println(v)
-			videos=append(videos, v)
+			videos = append(videos, v)
 		}
 	}
-	defer r.Close()
-	return videos,nil
+	defer func(r *sql.Rows) {
+		err := r.Close()
+		if err != nil {
+
+		}
+	}(r)
+	return videos, nil
 
 }
