@@ -66,6 +66,14 @@ func RelationAction(c *gin.Context) {
 		return
 	}
 
+	if userID == followUserID {
+		c.JSON(http.StatusBadRequest, models.Response{
+			StatusCode: 1,
+			StatusMsg:  "不能关注/取关自己",
+		})
+		return
+	}
+
 	errFollow := GetRelationServiceImpl().FollowUser(userID, followUserID, actionType)
 	if errFollow != nil {
 		c.JSON(http.StatusBadRequest, models.Response{
@@ -79,28 +87,9 @@ func RelationAction(c *gin.Context) {
 		log.Printf("更新 user 表的 is_follow 属性列失败")
 	}
 
-	/*
-		follow := models.UserFollow{
-			UserID:       userID,
-			FollowUserID: followUserID,
-			ActionType:   actionType,
-			CommonEntity: models.CommonEntity{CreateTime: time.Now()},
-			UpdateTime:   time.Now(),
-		}
-
-		err = impl.UserFollowServiceImpl{}.AddUserFollow(follow)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, models.Response{
-				StatusCode: 1,
-				StatusMsg:  "operator error",
-			})
-			return
-		}
-	*/
-
 	c.JSON(http.StatusOK, models.Response{
-		StatusCode: 200,
-		StatusMsg:  "ok",
+		StatusCode: 0,
+		StatusMsg:  "关注成功",
 	})
 	return
 }
@@ -138,8 +127,8 @@ func FollowList(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, models.FollowListResponse{
-		StatusCode:         200,
-		StatusMsg:          "ok",
+		StatusCode:         0,
+		StatusMsg:          "获取关注列表成功",
 		UserFollowResponse: userFollows,
 	})
 	return
@@ -147,21 +136,80 @@ func FollowList(c *gin.Context) {
 
 // FollowerList all users have same follower list
 func FollowerList(c *gin.Context) {
-	c.JSON(http.StatusOK, UserListResponse{
-		Response: models.Response{
-			StatusCode: 0,
-			StatusMsg:  "success",
-		},
-		UserList: []models.User{DemoUser},
+	token := c.Query("token")
+	userIDStr := c.Query("user_id")
+	// 验证 token
+	_, err := utils.ParseToken(token)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, models.Response{
+			StatusCode: 1,
+			StatusMsg:  "Unauthorized",
+		})
+		return
+	}
+
+	// 将 videoId 从 String 转换成 Int64
+	userID, err := strconv.ParseInt(userIDStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.Response{
+			StatusCode: 1,
+			StatusMsg:  "Invalid userID",
+		})
+		return
+	}
+
+	followers, err := GetRelationServiceImpl().GetFollowers(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.Response{
+			StatusCode: 1,
+			StatusMsg:  "request userID",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, models.FollowListResponse{
+		StatusCode:         0,
+		StatusMsg:          "获取粉丝列表成功",
+		UserFollowResponse: followers,
 	})
+	return
 }
 
 // FriendList all users have same friend list
 func FriendList(c *gin.Context) {
-	c.JSON(http.StatusOK, UserListResponse{
-		Response: models.Response{
-			StatusCode: 0,
-		},
-		UserList: []models.User{DemoUser},
+	token := c.Query("token")
+	userIDStr := c.Query("user_id")
+	// 验证 token
+	_, err := utils.ParseToken(token)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, models.Response{
+			StatusCode: 1,
+			StatusMsg:  "Unauthorized",
+		})
+		return
+	}
+
+	// 将 videoId 从 String 转换成 Int64
+	userID, err := strconv.ParseInt(userIDStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.Response{
+			StatusCode: 1,
+			StatusMsg:  "Invalid userID",
+		})
+		return
+	}
+
+	friends, err := GetRelationServiceImpl().GetFriends(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.Response{
+			StatusCode: 1,
+			StatusMsg:  "request userID",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, models.FollowListResponse{
+		StatusCode:         0,
+		StatusMsg:          "获取朋友列表成功",
+		UserFollowResponse: friends,
 	})
+	return
 }
