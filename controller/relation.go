@@ -138,7 +138,7 @@ func FollowList(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, models.FollowListResponse{
-		StatusCode:         200,
+		StatusCode:         0,
 		StatusMsg:          "ok",
 		UserFollowResponse: userFollows,
 	})
