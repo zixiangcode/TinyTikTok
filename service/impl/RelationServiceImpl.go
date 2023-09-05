@@ -5,7 +5,6 @@ import (
 	"TinyTikTok/db"
 	"TinyTikTok/models"
 	"errors"
-	"fmt"
 	"log"
 )
 
@@ -36,10 +35,6 @@ func (relationServiceImpl RelationServiceImpl) FollowUser(userId int64, toUserId
 		}
 	}()
 
-	if userId == toUserId {
-		return fmt.Errorf("不能关注/取关自己")
-	}
-
 	if actionType == 1 {
 		exists, err := dao.GetFollowByUserIdAndToUserId(userId, toUserId)
 		count := 1 // 对用户关注总量的影响
@@ -47,7 +42,7 @@ func (relationServiceImpl RelationServiceImpl) FollowUser(userId int64, toUserId
 			log.Printf("查询关注记录发生异常 = %v", err)
 			return err
 		}
-		if exists.Id != 0 {
+		if exists.Id != 0 && exists.IsDeleted == 0 {
 			log.Printf("该用户已关注")
 			return errors.New("已关注")
 		}
@@ -133,10 +128,23 @@ func (relationServiceImpl RelationServiceImpl) GetFollows(userId int64) ([]model
 
 // GetFollowers 获取粉丝列表
 func (relationServiceImpl RelationServiceImpl) GetFollowers(userId int64) ([]models.User, error) {
-	var users []models.User
-	err := db.GetMysqlDB().Table("follow").Where("follow_user_id = ? AND is_deleted = ?", userId, 0).Find(&users).Error
+	var usersId []int64
+	err := db.GetMysqlDB().Table("follow").
+		Where("follow_user_id = ? AND is_deleted = ?", userId, 0).
+		Pluck("user_id", &usersId).Error
 	if err != nil {
-		return nil, err
+		log.Printf("方法 GetFollowers 失败: %v", err)
+		return []models.User{}, err
+	}
+	users := make([]models.User, len(usersId))
+	for i := range usersId {
+		var user models.User
+		err := db.GetMysqlDB().Table("user").Where("id = ?", usersId[i]).Find(&user).Error
+		if err != nil {
+			log.Printf("粉丝列表查找用户数据失败")
+			return []models.User{}, err
+		}
+		users[i] = user
 	}
 	return users, nil
 }

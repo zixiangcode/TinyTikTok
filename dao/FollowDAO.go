@@ -11,7 +11,7 @@ import (
 // GetFollowByUserIdAndToUserId 通过关注用户 id 和被关注用户 id 查询关注关系
 func GetFollowByUserIdAndToUserId(userId int64, toUserId int64) (models.Follow, error) {
 	result := models.Follow{}
-	err := db.GetMysqlDB().Model(models.Follow{}).Where("user_id = ? AND follow_user_id = ? AND is_deleted = ?", userId, toUserId, 0).Find(&result).Error
+	err := db.GetMysqlDB().Model(models.Follow{}).Where("user_id = ? AND follow_user_id = ?", userId, toUserId).Find(&result).Error
 	return result, err
 }
 
@@ -23,7 +23,7 @@ func FollowUser(db *gorm.DB, userId int64, toUserId int64) (err error) {
 		return err
 	}
 	// 如果已经存在此关注关系，则将 is_deleted 置为 0
-	if follow != (models.Follow{}) {
+	if follow.Id != 0 {
 		err = db.Model(&models.Follow{}).Where("user_id = ? AND follow_user_id = ?", userId, toUserId).Update("is_deleted", 0).Error
 		if err != nil {
 			log.Printf("更新关注关系失败")
@@ -81,9 +81,11 @@ func UpdateUserFollowByUserName(username string) (err error) {
 		return err
 	}
 	// 更新 is_follow 属性列
-	err = db.GetMysqlDB().Model(&models.User{}).Where("id NOT IN ?", followedUsers).Update("is_follow", 0).Error
-	if err != nil {
-		return err
+	if len(followedUsers) > 0 {
+		err = db.GetMysqlDB().Model(&models.User{}).Where("id NOT IN ?", followedUsers).Update("is_follow", 0).Error
+		if err != nil {
+			return err
+		}
 	}
 	err = db.GetMysqlDB().Model(&models.User{}).Where("id IN ?", followedUsers).Update("is_follow", 1).Error
 	if err != nil {
@@ -91,6 +93,8 @@ func UpdateUserFollowByUserName(username string) (err error) {
 	}
 	return nil
 }
+
+// TODO 点击取消关注，user 表的 is_follow 属性更新存在问题
 
 // UpdateUserFollowByUserId 通过用户 ID 更新 user 表的 is_follow 属性列
 func UpdateUserFollowByUserId(userId int64) (err error) {
@@ -103,13 +107,15 @@ func UpdateUserFollowByUserId(userId int64) (err error) {
 		return err
 	}
 	// 更新 is_follow 属性列
-	err = db.GetMysqlDB().Model(&models.User{}).Where("id NOT IN ?", followedUsers).Update("is_follow", 0).Error
-	if err != nil {
-		return err
-	}
 	err = db.GetMysqlDB().Model(&models.User{}).Where("id IN ?", followedUsers).Update("is_follow", 1).Error
 	if err != nil {
 		return err
+	}
+	if len(followedUsers) > 0 {
+		err = db.GetMysqlDB().Model(&models.User{}).Where("id NOT IN ?", followedUsers).Update("is_follow", 0).Error
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
