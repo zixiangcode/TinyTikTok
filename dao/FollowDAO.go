@@ -35,7 +35,10 @@ func FollowUser(db *gorm.DB, userId int64, toUserId int64) (err error) {
 			UserId:       userId,
 			FollowUserId: toUserId,
 		}
-		err = db.Create(&follow).Error
+		if err := db.Create(&follow).Error; err != nil {
+			log.Printf("添加关注关系失败: %s", err.Error())
+			return err
+		}
 	}
 
 	return err

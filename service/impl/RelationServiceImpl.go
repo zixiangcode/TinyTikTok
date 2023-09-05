@@ -110,13 +110,23 @@ func (relationServiceImpl RelationServiceImpl) FollowUser(userId int64, toUserId
 
 // GetFollows 获取自身关注列表
 func (relationServiceImpl RelationServiceImpl) GetFollows(userId int64) ([]models.User, error) {
-	var users []models.User
-	err := db.GetMysqlDB().Table("follow").Where("user_id = ? AND is_deleted != ?", userId, 0).Find(&users).Error
+	var usersId []int64
+	err := db.GetMysqlDB().Table("follow").
+		Where("user_id = ? AND is_deleted = ?", userId, 0).
+		Pluck("follow_user_id", &usersId).Error
 	if err != nil {
-		return nil, err
+		log.Printf("方法 GetFollows 失败: %v", err)
+		return []models.User{}, err
 	}
-	for i := 0; i < len(users); i++ {
-		users[i].IsFollow = true
+	users := make([]models.User, len(usersId))
+	for i := range usersId {
+		var user models.User
+		err := db.GetMysqlDB().Table("user").Where("id = ?", usersId[i]).Find(&user).Error
+		if err != nil {
+			log.Printf("关注列表查找用户数据失败")
+			return []models.User{}, err
+		}
+		users[i] = user
 	}
 	return users, nil
 }
