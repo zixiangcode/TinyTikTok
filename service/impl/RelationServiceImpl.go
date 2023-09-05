@@ -79,7 +79,7 @@ func (relationServiceImpl RelationServiceImpl) FollowUser(userId int64, toUserId
 			log.Printf("查询关注记录发生异常 = %v", err)
 			return err
 		}
-		if exists == nil || exists.Id == 0 {
+		if exists == (models.Follow{}) || exists.Id == 0 {
 			log.Printf("未找到要取消关注的记录")
 			return errors.New("未关注")
 		}
