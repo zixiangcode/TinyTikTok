@@ -2,15 +2,15 @@ package impl
 
 import (
 	"TinyTikTok/config"
+	"TinyTikTok/dao"
 	"TinyTikTok/db"
 	"TinyTikTok/models"
 	"TinyTikTok/service"
 	"TinyTikTok/utils"
 	"database/sql"
 	"fmt"
-	"time"
-
 	"log"
+	"time"
 
 	"github.com/savsgio/gotils/uuid"
 
@@ -61,13 +61,6 @@ func (videoService *VideoServiceImpl) Publish(data *multipart.FileHeader, userId
 // SaveVideo 将视频的数据插入到数据库里面
 func SaveVideo(name string, userId int64, title string) error {
 
-	currentTime := time.Now()
-
-	// 获取当前时间的Unix时间戳
-	unixTime := currentTime.Unix()
-
-	// 将Unix时间戳转换为整数
-	intValue := int(unixTime)
 	var count int64
 	//获得人数
 	result := db.GetMysqlDB().Model(&models.Video{}).Count(&count).Error
@@ -104,8 +97,8 @@ func SaveVideo(name string, userId int64, title string) error {
 	//	return result
 	//}
 	//上面这个版本不知道为啥会导致内存泄露
-	s := "insert into videos(id ,user_id,play_url,cover_url,favorite_count,comment_count,is_favorite,title,create_date) values (?,?,?,?,?,?,?,?,?) "
-	r, err := db.GetMysql().Exec(s, count, userId, config.VideoConfig.Url+name+".mp4", config.VideoConfig.Url+name+".jpg", 0, 0, false, title, int64(intValue))
+	s := "insert into videos(id ,author_id,play_url,cover_url,favorite_count,comment_count,is_deleted,title,create_time)  values (?,?,?,?,?,?,?,?,?) "
+	r, err := db.GetMysql().Exec(s, count, userId, config.VideoConfig.Url+name+".mp4", config.VideoConfig.Url+name+".jpg", 0, 0, false, title, time.Now() )
 
 	if err != nil {
 		// fmt.Println("插入出现问题")
@@ -115,6 +108,7 @@ func SaveVideo(name string, userId int64, title string) error {
 		i, _ := r.LastInsertId()
 		fmt.Printf("i: %v\n", i)
 	}
+
 	s = "update user set work_count=work_count+1 where id=?"
 	r, err = db.GetMysql().Exec(s, userId)
 	if err != nil {
@@ -136,6 +130,14 @@ func (videoService *VideoServiceImpl) ShowVideoList(userId int64) ([]models.Vide
 
 }
 
+func (videoService VideoServiceImpl) GetVideoListByUserID(userID int64) ([]models.Video, error) {
+	videoList, err := dao.GetVideoListByUserID(userID)
+	if err != nil {
+		return []models.Video{}, err
+	}
+	return videoList, err
+}
+
 // QueryVideosById 根据用户id查询视频
 func QueryVideosById(user_id int64) ([]models.Video, error) {
 	var videos []models.Video
@@ -149,9 +151,9 @@ func QueryVideosById(user_id int64) ([]models.Video, error) {
 	//log.Println(videos)
 	//上面的代码会导致Video未提前加载，如果写preload("Video")则会出现未提前加载User  死锁了属于是
 
-	var tempint int //用于接收没用的变量
 
-	s := "select * from videos join user on tinytiktok.videos.user_id=user.id where user.id=?	 and tinytiktok.user.is_deleted=false"
+	log.Println("user_id=",user_id)
+	s := "select * from videos join user on videos.author_id=user.id where user.id=? and tinytiktok.user.is_deleted=false"
 	r, err := db.GetMysql().Query(s, user_id)
 	fmt.Println("sql语句是", s)
 	var v models.Video
@@ -167,7 +169,9 @@ func QueryVideosById(user_id int64) ([]models.Video, error) {
 	} else {
 		for r.Next() {
 
-			err := r.Scan(&v.Id, &v.AuthorID, &v.PlayURL, &v.CoverURL, &v.FavoriteCount, &v.CommentCount, &v.Title, &v.CreateTime, &tempint, &tempint, &tempint, &tempint)
+			err := r.Scan(&v.Id,&v.CreateTime,&v.IsDeleted,&v.AuthorID,&v.CoverURL,&v.PlayURL,&v.Title,&v.CommentCount,&v.FavoriteCount,
+				&v.Author.Id,&v.Author.Name,&v.Author.FollowCount,&v.Author.FollowerCount,&v.Author.IsFollow,&v.Author.Avatar,&v.Author.BackgroundImage,
+				&v.Author.Signature,&v.Author.TotalFavorited,&v.Author.WorkCount,&v.Author.FavoriteCount,&v.Author.IsDeleted,&v.Author.CreateTime,&v.Author.Password)
 			if err != nil {
 				return nil, err
 			}

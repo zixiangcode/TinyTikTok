@@ -58,10 +58,9 @@ func Publish(c *gin.Context) {
 	title := c.PostForm("title")
 	fmt.Println("标题是"+title)
 
-	//后期这里改成jwt解密
 	//TODO 将截取的token转化为userID
 	var userID int64
-	userID=2
+	userID=7097830770726666240
 
 
 	fmt.Println("userID=",userID)
@@ -131,6 +130,7 @@ func PublishList(c *gin.Context) {
 	//获取user_id
 	query := c.Query("user_id")
 	username, err := strconv.ParseInt(query, 10, 64)
+
 	//var username int64
 	//username=1
 	serviceImpl := GetVideoService()//创建接口
