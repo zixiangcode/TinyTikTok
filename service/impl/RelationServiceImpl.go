@@ -114,70 +114,99 @@ func (relationServiceImpl RelationServiceImpl) FollowUser(userId int64, toUserId
 }
 
 // GetFollows 获取自身关注列表
-func (relationServiceImpl RelationServiceImpl) GetFollows(userId int64) ([]models.User, error) {
+func (relationServiceImpl RelationServiceImpl) GetFollows(userId int64) ([]models.FollowUserInfo, error) {
 	var usersId []int64
 	err := db.GetMysqlDB().Table("follow").
 		Where("user_id = ? AND is_deleted = ?", userId, 0).
 		Pluck("follow_user_id", &usersId).Error
 	if err != nil {
 		log.Printf("方法 GetFollows 失败: %v", err)
-		return []models.User{}, err
+		return []models.FollowUserInfo{}, err
 	}
-	users := make([]models.User, len(usersId))
+	followUsers := make([]models.FollowUserInfo, len(usersId))
 	for i := range usersId {
-		var user models.User
+		var user = models.User{}
 		err := db.GetMysqlDB().Table("user").Where("id = ?", usersId[i]).Find(&user).Error
 		if err != nil {
 			log.Printf("关注列表查找用户数据失败")
-			return []models.User{}, err
+			return []models.FollowUserInfo{}, err
 		}
-		user.IsFollow = GetRelationServiceImpl().IsFollow(userId, usersId[i])
-		users[i] = user
+		followUser := models.FollowUserInfo{
+			Avatar:          user.Avatar,
+			BackgroundImage: user.BackgroundImage,
+			FavoriteCount:   user.FavoriteCount,
+			FollowCount:     user.FollowerCount,
+			FollowerCount:   user.FollowCount,
+			ID:              user.Id,
+			IsFollow:        relationServiceImpl.IsFollow(userId, user.Id),
+			Name:            user.Name,
+			Signature:       user.Signature,
+			TotalFavorited:  user.TotalFavorited,
+			WorkCount:       user.WorkCount,
+		}
+		followUsers[i] = followUser
 	}
-
-	// 更新关注数
-	err = db.GetMysqlDB().Model(&models.User{}).Where("id = ?", userId).
-		Update("follow_count", len(usersId)).Error
-	if err != nil {
-		log.Printf("更新关注数失败: %v", err)
-		return []models.User{}, err
-	}
-	return users, nil
+	return followUsers, err
+	/*
+		//更新关注数
+		err = db.GetMysqlDB().Model(&models.User{}).Where("id = ?", userId).
+			Update("follow_count", len(usersId)).Error
+		if err != nil {
+			log.Printf("更新关注数失败: %v", err)
+			return []models.FollowUserInfo{}, err
+		}
+		return users, nil
+	*/
 }
 
 // GetFollowers 获取粉丝列表
-func (relationServiceImpl RelationServiceImpl) GetFollowers(userId int64) ([]models.User, error) {
+func (relationServiceImpl RelationServiceImpl) GetFollowers(userId int64) ([]models.FollowUserInfo, error) {
 	var usersId []int64
 	err := db.GetMysqlDB().Table("follow").
 		Where("follow_user_id = ? AND is_deleted = ?", userId, 0).
 		Pluck("user_id", &usersId).Error
 	if err != nil {
 		log.Printf("方法 GetFollowers 失败: %v", err)
-		return []models.User{}, err
+		return []models.FollowUserInfo{}, err
 	}
-	users := make([]models.User, len(usersId))
+	followUsers := make([]models.FollowUserInfo, len(usersId))
 	for i := range usersId {
 		var user models.User
 		err := db.GetMysqlDB().Table("user").Where("id = ?", usersId[i]).Find(&user).Error
 		if err != nil {
 			log.Printf("粉丝列表查找用户数据失败")
+			return []models.FollowUserInfo{}, err
+		}
+		followUser := models.FollowUserInfo{
+			Avatar:          user.Avatar,
+			BackgroundImage: user.BackgroundImage,
+			FavoriteCount:   user.FavoriteCount,
+			FollowCount:     user.FollowerCount,
+			FollowerCount:   user.FollowCount,
+			ID:              user.Id,
+			IsFollow:        relationServiceImpl.IsFollow(userId, user.Id),
+			Name:            user.Name,
+			Signature:       user.Signature,
+			TotalFavorited:  user.TotalFavorited,
+			WorkCount:       user.WorkCount,
+		}
+		followUsers[i] = followUser
+	}
+	return followUsers, err
+	/*
+		// 更新被关注者粉丝总数
+		err = db.GetMysqlDB().Model(&models.User{}).Where("id = ?", userId).
+			Update("follower_count", len(usersId)).Error
+		if err != nil {
+			log.Printf("更新被关注者粉丝数失败：%v", err)
 			return []models.User{}, err
 		}
-		user.IsFollow = GetRelationServiceImpl().IsFollow(userId, usersId[i])
-		users[i] = user
-	}
-	// 更新被关注者粉丝总数
-	err = db.GetMysqlDB().Model(&models.User{}).Where("id = ?", userId).
-		Update("follower_count", len(usersId)).Error
-	if err != nil {
-		log.Printf("更新被关注者粉丝数失败：%v", err)
-		return []models.User{}, err
-	}
-	return users, nil
+		return users, nil
+	*/
 }
 
 // GetFriends 获取好友列表
-func (relationServiceImpl RelationServiceImpl) GetFriends(userId int64) ([]models.User, error) {
+func (relationServiceImpl RelationServiceImpl) GetFriends(userId int64) ([]models.FollowUserInfo, error) {
 	follows, err := GetRelationServiceImpl().GetFollows(userId)
 	if err != nil {
 		return nil, err
@@ -187,16 +216,16 @@ func (relationServiceImpl RelationServiceImpl) GetFriends(userId int64) ([]model
 		return nil, err
 	}
 
-	friends := make([]models.User, 0)
+	friends := make([]models.FollowUserInfo, 0)
 	for _, user := range followers {
-		if func(arr []models.User, id int64) bool {
+		if func(arr []models.FollowUserInfo, id int64) bool {
 			for _, u := range arr {
-				if u.Id == id {
+				if u.ID == id {
 					return true
 				}
 			}
 			return false
-		}(follows, user.Id) {
+		}(follows, user.ID) {
 			friends = append(friends, user)
 		}
 	}

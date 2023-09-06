@@ -9,11 +9,11 @@ type User struct {
 	FavoriteCount   int64  `json:"favorite_count"`   // 喜欢数
 	FollowCount     int64  `json:"follow_count"`     // 关注总数
 	FollowerCount   int64  `json:"follower_count"`   // 粉丝总数
-	IsFollow        bool   `json:"is_follow"`        // true-已关注，false-未关注
-	Name            string `json:"name"`             // 用户名称
-	Signature       string `json:"signature"`        // 个人简介
-	TotalFavorited  int64  `json:"total_favorited"`  // 获赞数量
-	WorkCount       int64  `json:"work_count"`       // 作品数
+	//IsFollow        bool   `json:"is_follow"`        // true-已关注，false-未关注
+	Name           string `json:"name"`            // 用户名称
+	Signature      string `json:"signature"`       // 个人简介
+	TotalFavorited int64  `json:"total_favorited"` // 获赞数量
+	WorkCount      int64  `json:"work_count"`      // 作品数
 }
 
 func (table *User) TableName() string {

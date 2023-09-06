@@ -17,6 +17,12 @@ func (commentServiceImpl CommentServiceImpl) AddComment(comment models.Comment) 
 		return models.CommentCommonResponse{}, err
 	}
 
+	//获取评论视频作者ID用于查询是否关注
+	videoUser, err := VideoServiceImpl{}.GetUserByVideoID(comment.VideoID)
+	if err != nil {
+		return models.CommentCommonResponse{}, err
+	}
+
 	//查询uesr信息，并拼接到response中
 	user, err := UserServiceImpl{}.GetUserById(comment.UserID)
 	if err != nil {
@@ -29,7 +35,7 @@ func (commentServiceImpl CommentServiceImpl) AddComment(comment models.Comment) 
 		Name:            user.Name,
 		FollowCount:     user.FollowCount,
 		FollowerCount:   user.FollowerCount,
-		IsFollow:        user.IsFollow,
+		IsFollow:        RelationServiceImpl{}.IsFollow(user.Id, videoUser.Id),
 		Avatar:          user.Avatar,
 		BackgroundImage: user.BackgroundImage,
 		Signature:       user.Signature,
@@ -81,13 +87,18 @@ func (commentServiceImpl CommentServiceImpl) GetCommentsByVideoID(videoID int64)
 			log.Printf("方法 GetCommentsByVideoID() 失败 %v", err)
 			return []models.CommentCommonResponse{}, err
 		}
+		//获取评论视频作者ID用于查询是否关注
+		videoUser, err := VideoServiceImpl{}.GetUserByVideoID(comment.VideoID)
+		if err != nil {
+			return []models.CommentCommonResponse{}, err
+		}
 
 		commentuserinfo := models.CommentUserInfo{
 			ID:              user.Id,
 			Name:            user.Name,
 			FollowCount:     user.FollowCount,
 			FollowerCount:   user.FollowerCount,
-			IsFollow:        user.IsFollow,
+			IsFollow:        RelationServiceImpl{}.IsFollow(user.Id, videoUser.Id),
 			Avatar:          user.Avatar,
 			BackgroundImage: user.BackgroundImage,
 			Signature:       user.Signature,
