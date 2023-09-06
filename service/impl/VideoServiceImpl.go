@@ -134,7 +134,7 @@ func QueryVideosById(userId int64) ([]models.Video, error) {
 		for r.Next() {
 
 			err := r.Scan(&v.Id, &v.CreateTime, &v.IsDeleted, &v.AuthorID, &v.CoverURL, &v.PlayURL, &v.Title, &v.CommentCount, &v.FavoriteCount,
-				&v.Author.Id, &v.Author.Name, &v.Author.FollowCount, &v.Author.FollowerCount, &v.Author.IsFollow, &v.Author.Avatar, &v.Author.BackgroundImage,
+				&v.Author.Id, &v.Author.Name, &v.Author.FollowCount, &v.Author.FollowerCount, &v.Author.Avatar, &v.Author.BackgroundImage,
 				&v.Author.Signature, &v.Author.TotalFavorited, &v.Author.WorkCount, &v.Author.FavoriteCount, &v.Author.IsDeleted, &v.Author.CreateTime, &v.Author.Password)
 			if err != nil {
 				return nil, err
@@ -151,4 +151,9 @@ func QueryVideosById(userId int64) ([]models.Video, error) {
 	}(r)
 	return videos, nil
 
+}
+
+func (videoService VideoServiceImpl) GetUserByVideoID(videoID int64) (models.User, error) {
+	user, err := dao.GetUserByVideoID(videoID)
+	return user, err
 }

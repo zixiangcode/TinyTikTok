@@ -50,13 +50,7 @@ func (feedServiceImpl FeedServiceImpl) GetFeedByLatestTime(timestamp int64, user
 			log.Printf("方法 GetFeedByLatestTime 失败 %v", err)
 			return []models.FeedResponseVideoInfo{}, 0, err
 		}
-		//查询每个video的评论总数
-		comments, err := dao.GetCommentsByVideoID(video.Id)
-		if err != nil {
-			log.Printf("方法 GetFeedByLatestTime 失败 %v", err)
-			return []models.FeedResponseVideoInfo{}, 0, err
-		}
-		commentCount := int64(len(comments))
+
 		var feedResponseVideoInfo = models.FeedResponseVideoInfo{
 			Author: models.FeedUserInfo{
 				Avatar:          user.Avatar,
@@ -65,13 +59,13 @@ func (feedServiceImpl FeedServiceImpl) GetFeedByLatestTime(timestamp int64, user
 				FollowCount:     user.FollowCount,
 				FollowerCount:   user.FollowerCount,
 				ID:              user.Id,
-				IsFollow:        user.IsFollow,
+				IsFollow:        RelationServiceImpl{}.IsFollow(userID, user.Id),
 				Name:            user.Name,
 				Signature:       user.Signature,
 				TotalFavorited:  user.TotalFavorited,
 				WorkCount:       user.WorkCount,
 			},
-			CommentCount:  commentCount,
+			CommentCount:  video.CommentCount,
 			CoverURL:      video.CoverURL,
 			FavoriteCount: video.FavoriteCount,
 			ID:            video.Id,

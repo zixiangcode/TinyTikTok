@@ -13,3 +13,12 @@ func GetVideoListByUserID(UserID int64) ([]models.Video, error) {
 		Find(&videoList)
 	return videoList, result.Error
 }
+
+func GetUserByVideoID(videoID int64) (models.User, error) {
+	var user models.User
+	result := db.GetMysqlDB().
+		Where("id = ?", videoID).
+		Order("create_time DESC").
+		Find(&user)
+	return user, result.Error
+}

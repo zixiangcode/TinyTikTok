@@ -51,6 +51,12 @@ func (favoriteRelationServiceImpl FavoriteRelationServiceImpl) GetFavoriteRelati
 			return []models.FavoriteVideoInfo{}, err
 		}
 
+		//获取评论视频作者ID用于查询是否关注
+		videoUser, err := VideoServiceImpl{}.GetUserByVideoID(video.AuthorID)
+		if err != nil {
+			return []models.FavoriteVideoInfo{}, err
+		}
+
 		//拼接结果
 		favoriteVideoInfo := models.FavoriteVideoInfo{
 			ID: video.Id,
@@ -59,7 +65,7 @@ func (favoriteRelationServiceImpl FavoriteRelationServiceImpl) GetFavoriteRelati
 				Name:            user.Name,
 				FollowCount:     user.FollowCount,
 				FollowerCount:   user.FollowerCount,
-				IsFollow:        user.IsFollow,
+				IsFollow:        RelationServiceImpl{}.IsFollow(user.Id, videoUser.Id),
 				Avatar:          user.Avatar,
 				BackgroundImage: user.BackgroundImage,
 				Signature:       user.Signature,
