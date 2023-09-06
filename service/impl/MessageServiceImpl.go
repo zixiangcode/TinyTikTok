@@ -34,7 +34,7 @@ func (messageServiceImpl MessageServiceImpl) SendMessage(toUserId int64, fromUse
 	return nil
 }
 
-func (messageServiceImpl MessageServiceImpl) GetMessages(userID int64, toUserid string) ([]models.MessageResponse, error) {
+func (messageServiceImpl MessageServiceImpl) GetMessages(userID int64, toUserid string, preMsgTimeStr string) ([]models.MessageResponse, error) {
 
 	//将toUserid从String转换成Int64
 	toUserId, err := strconv.ParseInt(toUserid, 10, 64)
@@ -43,8 +43,20 @@ func (messageServiceImpl MessageServiceImpl) GetMessages(userID int64, toUserid 
 		return []models.MessageResponse{}, err
 	}
 
+	//将preMsgTime从String转换成Int64时间戳
+	preMsgTimeInt, err1 := strconv.ParseInt(preMsgTimeStr, 10, 64)
+	if err1 != nil {
+		log.Printf("toUserid从String转换成Int64失败 %v", err)
+		return []models.MessageResponse{}, err
+	}
+
+	// 创建一个时间对象
+	t := time.Unix(preMsgTimeInt, 0)
+	//将时间戳数据转换成yyyy-mm-dd hh:ss:mm格式
+	preMsgTime := t.Format("2006-01-02 15:04:05")
+
 	//查询消息数据
-	messages, err := dao.GetMessages(userID, toUserId)
+	messages, err := dao.GetMessages(userID, toUserId, preMsgTime)
 	if err != nil {
 		log.Printf("方法 SendMessage 失败 %v", err)
 		return []models.MessageResponse{}, err
@@ -54,9 +66,10 @@ func (messageServiceImpl MessageServiceImpl) GetMessages(userID int64, toUserid 
 	var messageResponses = make([]models.MessageResponse, len(messages))
 
 	for k, message := range messages {
+
 		var messageResponse = models.MessageResponse{
 			Content:    message.Content,
-			CreateTime: message.CreateTime.Format("2006-01-02 15:04:05"),
+			CreateTime: message.CreateTime.Unix(),
 			FromUserID: message.FromUserID,
 			ID:         message.Id,
 			ToUserID:   message.ToUserID,

@@ -67,7 +67,7 @@ func MessageAction(c *gin.Context) {
 func MessageChat(c *gin.Context) {
 	token := c.Query("token")
 	toUserId := c.Query("to_user_id")
-
+	preMsgTime := c.Query("pre_msg_time")
 	//验证token
 	userClaims, err := utils.ParseToken(token)
 	if err != nil {
@@ -81,7 +81,7 @@ func MessageChat(c *gin.Context) {
 	userID := userClaims.JWTCommonEntity.Id
 
 	//查询聊天消息
-	MessageResponseList, err := impl.MessageServiceImpl{}.GetMessages(userID, toUserId)
+	MessageResponseList, err := impl.MessageServiceImpl{}.GetMessages(userID, toUserId, preMsgTime)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"status_code": 1,
