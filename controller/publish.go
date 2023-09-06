@@ -3,6 +3,7 @@ package controller
 import (
 	"TinyTikTok/models"
 	"TinyTikTok/service/impl"
+	"TinyTikTok/utils"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
@@ -16,8 +17,6 @@ type VideoListResponse struct {
 	VideoList []models.Video `json:"video_list"`
 }
 
-
-
 func GetVideoService() impl.VideoServiceImpl { //创建一个视频流接口
 	var VideoService impl.VideoServiceImpl
 	return VideoService
@@ -25,70 +24,47 @@ func GetVideoService() impl.VideoServiceImpl { //创建一个视频流接口
 
 // Publish check token then save upload file to public directory
 func Publish(c *gin.Context) {
-	data, err := c.FormFile("data")//获取上传的数据
-	if err!=nil{
+	data, err := c.FormFile("data") //获取上传的数据
+	if err != nil {
 		log.Printf("上传数据出现问题\n")
 
-		c.JSON(http.StatusOK, models.Response{//返回错误信息
+		c.JSON(http.StatusOK, models.Response{ //返回错误信息
 			StatusCode: 1,
 			StatusMsg:  err.Error(),
 		})
 		return
-	}else{
+	} else {
 		log.Println("上传没问题")
 	}
 	//获取视频名字
 	videoName := filepath.Base(data.Filename)
-	log.Println("视频文件的名字为",videoName)
+	log.Println("视频文件的名字为", videoName)
 
+	token := c.PostForm("token")
 
-	token:=c.PostForm("token")
-
-	//fmt.Printf("id=%v  类型是%v\n",token,token)
 	//userId, err := strconv.ParseInt(token, 10, 64)//用户账号
-	if err!=nil{
+	if err != nil {
 		//log.Println("转化出问题了")
-		c.JSON(http.StatusOK, models.Response{//返回错误信息
+		c.JSON(http.StatusOK, models.Response{ //返回错误信息
 			StatusCode: 1,
 			StatusMsg:  err.Error(),
 		})
 		return
 	}
-	fmt.Println("用户账号是",token)
+	fmt.Println("用户账号是", token)
 	title := c.PostForm("title")
-	fmt.Println("标题是"+title)
+	fmt.Println("标题是" + title)
 
-	//TODO 将截取的token转化为userID
-	var userID int64
-	userID=7097830770726666240
+	// 将截取的token转化为userID
 
+	userClaim, err := utils.ParseToken(token)
 
-	fmt.Println("userID=",userID)
+	userID := userClaim.JWTCommonEntity.Id
+
+	fmt.Println("userID=", userID)
 
 	//获取接口
 	videoService := GetVideoService()
-
-	//exist, err := videoService.IsExist(userID)//查询用户是否存在
-	//if err!=nil {
-	//	c.JSON(http.StatusOK, models.Response{
-	//		StatusCode: 1,
-	//		StatusMsg:  "未知错误",
-	//	})
-	//	return
-	//}else if !exist {//没查询到就是0
-	//	c.JSON(http.StatusOK, models.Response{
-	//		StatusCode: 1,
-	//		StatusMsg:  "该用户不存在",
-	//	})
-	//
-	//	c.JSON(http.StatusOK, models.Response{//返回错误信息
-	//		StatusCode: 1,
-	//		StatusMsg:  err.Error(),
-	//	})
-	//	return
-	//}else{
-	//	fmt.Println("上传没问题")
-	//}
 
 	//上传文件
 	err = videoService.Publish(data, userID, title)
@@ -109,41 +85,21 @@ func Publish(c *gin.Context) {
 
 // PublishList all users have same publish video list
 func PublishList(c *gin.Context) {
-
-	//q := c.Query("token")
-	//
-	//if q=="" {
-	//	c.JSON(http.StatusOK, VideoListResponse{
-	//		Response: models.Response{
-	//			StatusCode: 1,
-	//			StatusMsg:"当前用户不存在",
-	//		},
-	//		VideoList: nil,
-	//	})
-	//	return
-	//}
-	//username, err := strconv.ParseInt(q, 10, 64)
-	//if err!=nil {
-	//	log.Println("pushList to change err",err)
-	//}
-
 	//获取user_id
 	query := c.Query("user_id")
 	username, err := strconv.ParseInt(query, 10, 64)
 
-	//var username int64
-	//username=1
-	serviceImpl := GetVideoService()//创建接口
+	serviceImpl := GetVideoService() //创建接口
 	list, err := serviceImpl.ShowVideoList(username)
-	if err!=nil{
+	if err != nil {
 		c.JSON(http.StatusOK, VideoListResponse{
 			Response: models.Response{
-				StatusMsg:"查询失败",
+				StatusMsg:  "查询失败",
 				StatusCode: 1,
 			},
 			VideoList: nil,
 		})
-	}else{
+	} else {
 		c.JSON(http.StatusOK, VideoListResponse{
 			Response: models.Response{
 				StatusMsg:  "查询成功",

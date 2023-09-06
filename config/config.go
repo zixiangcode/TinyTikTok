@@ -10,15 +10,14 @@ const VideoCount = 5
 
 type Configuration struct {
 	Mysql string `json:"Mysql"`
-
 }
 
 type VideoServerConfig struct {
-	AccessKeyId string	`json:"AccessKeyId"`
-	AccessKeySecret string	`json:"AccessKeySecret"`
-	Endpoint string		`json:"Endpoint"`
-	BucketName	string	`json:"BucketName"`
-	Url			string	`json:"Url"`
+	AccessKeyId     string `json:"AccessKeyId"`
+	AccessKeySecret string `json:"AccessKeySecret"`
+	Endpoint        string `json:"Endpoint"`
+	BucketName      string `json:"BucketName"`
+	Url             string `json:"Url"`
 }
 
 //const AccessKeyId = ""
@@ -29,7 +28,7 @@ type VideoServerConfig struct {
 
 var Config Configuration // 实例化一个 Configuration 类对象
 
-var VideoConfig VideoServerConfig		//实例化一个VideoServerConfig对象
+var VideoConfig VideoServerConfig //实例化一个VideoServerConfig对象
 
 // ReadConfig 读取配置文件
 func ReadConfig(fileName string) {
@@ -43,7 +42,7 @@ func ReadConfig(fileName string) {
 	}
 }
 
-func ReadVideoServerConfig(fileName string)  {
+func ReadVideoServerConfig(fileName string) {
 	configFile, err := ioutil.ReadFile(fileName) // 读取文件内容并将其作为字节切片返回
 	if err != nil {
 		log.Fatalf("Error ReadVideoServerConfig config file: %v", err)
@@ -53,5 +52,3 @@ func ReadVideoServerConfig(fileName string)  {
 		log.Fatalf("Error parsing config file: %v", err)
 	}
 }
-
-

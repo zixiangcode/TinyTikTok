@@ -17,7 +17,7 @@ import (
 	"sync"
 )
 
-func UploadToServer( data *multipart.FileHeader,videoName string) error {
+func UploadToServer(data *multipart.FileHeader, videoName string) error {
 
 	//将视频流上传到视频服务器，保存视频链接
 	file, err := data.Open()
@@ -38,7 +38,6 @@ func UploadToServer( data *multipart.FileHeader,videoName string) error {
 		return err
 	}
 
-
 	// 获取存储空间
 	bucket, err := client.Bucket(config.VideoConfig.BucketName)
 	//bucket, err := client.Bucket(BucketName)
@@ -48,13 +47,12 @@ func UploadToServer( data *multipart.FileHeader,videoName string) error {
 	}
 
 	// 上传视频流到OSS
-	err = bucket.PutObject(videoName+".mp4", file)//文件名   后缀添加.mp4
+	err = bucket.PutObject(videoName+".mp4", file) //文件名   后缀添加.mp4
 	if err != nil {
 		fmt.Println("Error:", err)
 		return err
 	}
 	fmt.Println("上传视频到oos成功")
-
 
 	//获取第一帧的图片，放到image里面
 	err, path := GetImage(videoName)
@@ -62,7 +60,7 @@ func UploadToServer( data *multipart.FileHeader,videoName string) error {
 		log.Println("getImage Error:", err)
 		return err
 	}
-	fmt.Println("保存文件的path=",path)
+	fmt.Println("保存文件的path=", path)
 
 	//打开本地文件
 	file, err = os.Open(path)
@@ -76,22 +74,20 @@ func UploadToServer( data *multipart.FileHeader,videoName string) error {
 		return err
 	}
 
-
-
-	var wg	sync.WaitGroup
-	wg.Add(2)			//开两个协程
+	var wg sync.WaitGroup
+	wg.Add(2) //开两个协程
 	//删除在image里面的文件流
-	go  deleteFile(&wg,path)
-	go deleteFile(&wg,path + ".jpg")
+	go deleteFile(&wg, path)
+	go deleteFile(&wg, path+".jpg")
 	wg.Wait()
 
-	if err!=nil{
+	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func deleteFile(wg *sync.WaitGroup,path string)error{
+func deleteFile(wg *sync.WaitGroup, path string) error {
 	defer wg.Done()
 	err := filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -99,7 +95,7 @@ func deleteFile(wg *sync.WaitGroup,path string)error{
 			return err
 		}
 
-		if !info.IsDir(){
+		if !info.IsDir() {
 			err := os.Remove(path)
 			if err != nil {
 				fmt.Printf("删除图片时出错：%v\n", err)
@@ -117,7 +113,7 @@ func deleteFile(wg *sync.WaitGroup,path string)error{
 	}
 	return nil
 }
-func printDir(path string){
+func printDir(path string) {
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		log.Fatal(err)
@@ -132,16 +128,13 @@ func printDir(path string){
 	}
 }
 
-//获取图片的第一帧			返回错误和路径
-func GetImage(Filename string) (error,string){
-	videoURL := config.VideoConfig.Url+Filename+".mp4"
+// GetImage 获取图片的第一帧
+func GetImage(Filename string) (error, string) {
+	videoURL := config.VideoConfig.Url + Filename + ".mp4"
 	//videoURL := "https://www.w3schools.com/html/movie.mp4"
 
-	outputPath := "public/"+Filename//图片的路径
-	fmt.Println("链接是",videoURL)
-	//fmt.Println("--------------")
-	//printDir("public/")
-	//fmt.Println("--------------")
+	outputPath := "public/" + Filename //图片的路径
+	fmt.Println("链接是", videoURL)
 
 	//打印当前路径
 	dir, err := os.Getwd()
@@ -186,7 +179,7 @@ func GetImage(Filename string) (error,string){
 	img = resize.Resize(1280, 850, img, resize.Lanczos3)
 
 	// 创建图片
-	outputFile, err := os.Create("public/"+Filename+".jpg")
+	outputFile, err := os.Create("public/" + Filename + ".jpg")
 	if err != nil {
 		fmt.Println("Error creating output file:", err)
 		return nil, ""
@@ -195,6 +188,6 @@ func GetImage(Filename string) (error,string){
 
 	jpeg.Encode(outputFile, img, nil)
 
-	fmt.Println("Screenshot saved to"+outputPath+" output.jpg")
-	return nil, "public/"+Filename
+	fmt.Println("Screenshot saved to" + outputPath + " output.jpg")
+	return nil, "public/" + Filename
 }

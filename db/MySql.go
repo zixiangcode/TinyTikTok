@@ -27,11 +27,11 @@ func CreateGORMDB() {
 	d, err := sql.Open("mysql", config.Config.Mysql)
 	Db = d
 	if err != nil {
-		log.Println("初始化失败",err)
+		log.Println("初始化失败", err)
 	}
 	err = d.Ping()
 	if err != nil {
-		log.Println("初始化失败",err)
+		log.Println("初始化失败", err)
 	}
 	log.Println("初始化成功")
 }
@@ -44,4 +44,3 @@ func GetMysqlDB() *gorm.DB {
 func GetMysql() *sql.DB {
 	return Db
 }
-

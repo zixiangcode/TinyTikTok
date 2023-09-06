@@ -68,37 +68,11 @@ func SaveVideo(name string, userId int64, title string) error {
 		log.Println(result)
 	}
 
-	//err := db.GetMysql().QueryRow("SELECT COUNT(*) FROM videos").Scan(&count)
-	//if err != nil {
-	//	log.Println(err)
-	//}
 	count++
 	log.Println("count=", count)
-	//fmt.Println(user)
-	//video := models.Video{
-	//	//CommonEntity: entity,
-	//	Author: user,
-	//	//ID: 6,
-	//	ID:count,
-	//	CreateDate: int64(intValue),
-	//	UserId:userId,
-	//	CommentCount: 0,
-	//	CoverURL:url+name+".jpg",
-	//	FavoriteCount: 0,
-	//	IsFavorite: false,
-	//	PlayURL: url+name+".mp4",
-	//	Title: title,
-	//}
-	//fmt.Println(video)
-	//log.Println("上面的走完了")
-	//result = db.GetMysqlDB().Create(&video).Error
-	//if result.Error!=nil{
-	//	log.Println("插入出错了",result)
-	//	return result
-	//}
-	//上面这个版本不知道为啥会导致内存泄露
+
 	s := "insert into videos(id ,author_id,play_url,cover_url,favorite_count,comment_count,is_deleted,title,create_time)  values (?,?,?,?,?,?,?,?,?) "
-	r, err := db.GetMysql().Exec(s, count, userId, config.VideoConfig.Url+name+".mp4", config.VideoConfig.Url+name+".jpg", 0, 0, false, title, time.Now() )
+	r, err := db.GetMysql().Exec(s, count, userId, config.VideoConfig.Url+name+".mp4", config.VideoConfig.Url+name+".jpg", 0, 0, false, title, time.Now())
 
 	if err != nil {
 		// fmt.Println("插入出现问题")
@@ -141,18 +115,8 @@ func (videoService VideoServiceImpl) GetVideoListByUserID(userID int64) ([]model
 // QueryVideosById 根据用户id查询视频
 func QueryVideosById(user_id int64) ([]models.Video, error) {
 	var videos []models.Video
-	//var err error
-	//	err = db.GetMysqlDB().Preload("User", "id = tinytiktok.videos.user_id").Where("videos.user_id=?", user_id).Find(&videos).Error
-	//if err!=nil{
-	//	log.Println("查询语句出现了问题，err",err)
-	//	return nil,err
-	//}
-	//log.Println("查询没啥问题")
-	//log.Println(videos)
-	//上面的代码会导致Video未提前加载，如果写preload("Video")则会出现未提前加载User  死锁了属于是
 
-
-	log.Println("user_id=",user_id)
+	log.Println("user_id=", user_id)
 	s := "select * from videos join user on videos.author_id=user.id where user.id=? and tinytiktok.user.is_deleted=false"
 	r, err := db.GetMysql().Query(s, user_id)
 	fmt.Println("sql语句是", s)
@@ -169,9 +133,9 @@ func QueryVideosById(user_id int64) ([]models.Video, error) {
 	} else {
 		for r.Next() {
 
-			err := r.Scan(&v.Id,&v.CreateTime,&v.IsDeleted,&v.AuthorID,&v.CoverURL,&v.PlayURL,&v.Title,&v.CommentCount,&v.FavoriteCount,
-				&v.Author.Id,&v.Author.Name,&v.Author.FollowCount,&v.Author.FollowerCount,&v.Author.IsFollow,&v.Author.Avatar,&v.Author.BackgroundImage,
-				&v.Author.Signature,&v.Author.TotalFavorited,&v.Author.WorkCount,&v.Author.FavoriteCount,&v.Author.IsDeleted,&v.Author.CreateTime,&v.Author.Password)
+			err := r.Scan(&v.Id, &v.CreateTime, &v.IsDeleted, &v.AuthorID, &v.CoverURL, &v.PlayURL, &v.Title, &v.CommentCount, &v.FavoriteCount,
+				&v.Author.Id, &v.Author.Name, &v.Author.FollowCount, &v.Author.FollowerCount, &v.Author.IsFollow, &v.Author.Avatar, &v.Author.BackgroundImage,
+				&v.Author.Signature, &v.Author.TotalFavorited, &v.Author.WorkCount, &v.Author.FavoriteCount, &v.Author.IsDeleted, &v.Author.CreateTime, &v.Author.Password)
 			if err != nil {
 				return nil, err
 			}

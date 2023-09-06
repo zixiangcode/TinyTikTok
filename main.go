@@ -12,7 +12,7 @@ func main() {
 
 	config.ReadConfig("config/configuration.json") // 先读取配置文件
 	config.ReadVideoServerConfig("config/videoserverconfig.json")
-	db.CreateGORMDB()                              // 创建 GORM 连接 MySql
+	db.CreateGORMDB() // 创建 GORM 连接 MySql
 
 	go service.RunMessageServer()
 

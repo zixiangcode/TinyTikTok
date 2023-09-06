@@ -1,6 +1,6 @@
 {
-  "AccessKeyId": "",
-  "AccessKeySecret" : "",
+  "AccessKeyId": "LTAI5tRqeyM5eFrW5VLk4b6X",
+  "AccessKeySecret" : "Iaw3fqlsX8Zr1eVbFDbO3gkZrYmjjv",
   "Endpoint" : "https://oss-cn-hangzhou.aliyuncs.com",
   "BucketName": "web-tlias-amireux",
   "url":"https://web-tlias-amireux.oss-cn-hangzhou.aliyuncs.com/"
