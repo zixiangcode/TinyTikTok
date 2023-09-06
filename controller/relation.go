@@ -1,12 +1,10 @@
 package controller
 
 import (
-	"TinyTikTok/dao"
 	"TinyTikTok/models"
 	"TinyTikTok/service/impl"
 	"TinyTikTok/utils"
 	"github.com/gin-gonic/gin"
-	"log"
 	"net/http"
 	"strconv"
 )
@@ -82,10 +80,12 @@ func RelationAction(c *gin.Context) {
 		})
 		return
 	}
-	err = dao.UpdateUserFollowByUserId(userID)
-	if err != nil {
-		log.Printf("更新 user 表的 is_follow 属性列失败")
-	}
+	/*
+		err = dao.UpdateUserFollowByUserId(userID)
+		if err != nil {
+			log.Printf("更新 user 表的 is_follow 属性列失败")
+		}
+	*/
 
 	c.JSON(http.StatusOK, models.Response{
 		StatusCode: 0,

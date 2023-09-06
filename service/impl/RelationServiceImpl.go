@@ -23,6 +23,16 @@ func GetRelationServiceImpl() RelationServiceImpl {
 	return relationServiceImpl
 }
 
+// IsFollow 是否关注
+func (relationServiceImpl RelationServiceImpl) IsFollow(userId int64, toUserId int64) bool {
+	var follow models.Follow
+	err := db.GetMysqlDB().Model(models.Follow{}).Where("user_id = ? AND follow_user_id = ? AND is_deleted = ?", userId, toUserId, 0).Find(&follow).Error
+	if err != nil || (follow == models.Follow{}) {
+		return false
+	}
+	return true
+}
+
 // FollowUser 关注用户
 func (relationServiceImpl RelationServiceImpl) FollowUser(userId int64, toUserId int64, actionType int) error {
 	tx := db.GetMysqlDB().Begin()
@@ -121,7 +131,16 @@ func (relationServiceImpl RelationServiceImpl) GetFollows(userId int64) ([]model
 			log.Printf("关注列表查找用户数据失败")
 			return []models.User{}, err
 		}
+		user.IsFollow = GetRelationServiceImpl().IsFollow(userId, usersId[i])
 		users[i] = user
+	}
+
+	// 更新关注数
+	err = db.GetMysqlDB().Model(&models.User{}).Where("id = ?", userId).
+		Update("follow_count", len(usersId)).Error
+	if err != nil {
+		log.Printf("更新关注数失败: %v", err)
+		return []models.User{}, err
 	}
 	return users, nil
 }
@@ -144,7 +163,15 @@ func (relationServiceImpl RelationServiceImpl) GetFollowers(userId int64) ([]mod
 			log.Printf("粉丝列表查找用户数据失败")
 			return []models.User{}, err
 		}
+		user.IsFollow = GetRelationServiceImpl().IsFollow(userId, usersId[i])
 		users[i] = user
+	}
+	// 更新被关注者粉丝总数
+	err = db.GetMysqlDB().Model(&models.User{}).Where("id = ?", userId).
+		Update("follower_count", len(usersId)).Error
+	if err != nil {
+		log.Printf("更新被关注者粉丝数失败：%v", err)
+		return []models.User{}, err
 	}
 	return users, nil
 }

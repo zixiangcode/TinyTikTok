@@ -138,20 +138,54 @@ func (userService UserServiceImpl) GetUserByIds(userIDs []int64) (users []models
 
 // UpdateFollowTotalCount 更新数据关注总数
 func (userService UserServiceImpl) UpdateFollowTotalCount(db *gorm.DB, userID int64, count int) (err error) {
-	err = db.Model(&models.User{}).Where("id = ?", userID).Update("follow_count", gorm.Expr("follow_count + ? ", count)).Error
+	var usersId []int64
+	err = db.Table("follow").
+		Where("user_id = ? AND is_deleted = ?", userID, 0).
+		Pluck("follow_user_id", &usersId).Error
 	if err != nil {
-		log.Printf("方法 UpdateFollowTotalCount() 失败 %v", err)
-		return
+		log.Printf("查询关注数目失败: %v", err)
+		return err
 	}
+	// 更新关注数
+	err = db.Model(&models.User{}).Where("id = ?", userID).
+		Update("follow_count", len(usersId)).Error
+	if err != nil {
+		log.Printf("更新关注数失败: %v", err)
+		return err
+	}
+	/*
+		err = db.Model(&models.User{}).Where("id = ?", userID).Update("follow_count", gorm.Expr("follow_count + ? ", count)).Error
+		if err != nil {
+			log.Printf("方法 UpdateFollowTotalCount() 失败 %v", err)
+			return
+		}
+	*/
 	return
 }
 
 // UpdateFollowerTotalCount 更新用户粉丝数
 func (userService UserServiceImpl) UpdateFollowerTotalCount(db *gorm.DB, userID int64, count int) (err error) {
-	err = db.Model(&models.User{}).Where("id = ?", userID).Update("follower_count", gorm.Expr("follower_count + ? ", count)).Error
+	var usersId []int64
+	err = db.Table("follow").
+		Where("follow_user_id = ? AND is_deleted = ?", userID, 0).
+		Pluck("user_id", &usersId).Error
 	if err != nil {
-		log.Printf("方法 UpdateFollowerTotalCount() 失败 %v", err)
-		return
+		log.Printf("查询粉丝数目失败: %v", err)
+		return err
 	}
+	// 更新被关注者粉丝总数
+	err = db.Model(&models.User{}).Where("id = ?", userID).
+		Update("follower_count", len(usersId)).Error
+	if err != nil {
+		log.Printf("更新被关注者粉丝数失败：%v", err)
+		return err
+	}
+	/*
+		err = db.Model(&models.User{}).Where("id = ?", userID).Update("follower_count", gorm.Expr("follower_count + ? ", count)).Error
+		if err != nil {
+			log.Printf("方法 UpdateFollowerTotalCount() 失败 %v", err)
+			return
+		}
+	*/
 	return
 }
