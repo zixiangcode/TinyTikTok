@@ -7,5 +7,5 @@ type FavoriteRelation struct { //储存在数据库中的评论结构
 }
 
 func (table *FavoriteRelation) TableName() string {
-	return "favoriteRelations"
+	return "favoriterelations"
 }
