@@ -1,8 +1,10 @@
 package utils
 
 import (
+	"TinyTikTok/config"
 	"bytes"
 	"fmt"
+	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 	"github.com/nfnt/resize"
 	"image"
 	"image/jpeg"
@@ -29,29 +31,29 @@ func UploadToServer( data *multipart.FileHeader,videoName string) error {
 	//创建OSS客户端
 
 	//这里记得把账号密码给填上去
-	//client, err := oss.New(config.VideoConfig.Endpoint, config.VideoConfig.AccessKeyId, config.VideoConfig.AccessKeySecret)
-	////client, err := oss.New(Endpoint, AccessKeyId, AccessKeySecret)
-	//if err != nil {
-	//	fmt.Println("Error:", err)
-	//	return err
-	//}
-	//
-	//
-	//// 获取存储空间
-	//bucket, err := client.Bucket(config.VideoConfig.BucketName)
-	////bucket, err := client.Bucket(BucketName)
-	//if err != nil {
-	//	fmt.Println("Error:", err)
-	//	return err
-	//}
-	//
-	//// 上传视频流到OSS
-	//err = bucket.PutObject(videoName+".mp4", file)//文件名   后缀添加.mp4
-	//if err != nil {
-	//	fmt.Println("Error:", err)
-	//	return err
-	//}
-	//fmt.Println("上传视频到oos成功")
+	client, err := oss.New(config.VideoConfig.Endpoint, config.VideoConfig.AccessKeyId, config.VideoConfig.AccessKeySecret)
+	//client, err := oss.New(Endpoint, AccessKeyId, AccessKeySecret)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return err
+	}
+
+
+	// 获取存储空间
+	bucket, err := client.Bucket(config.VideoConfig.BucketName)
+	//bucket, err := client.Bucket(BucketName)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return err
+	}
+
+	// 上传视频流到OSS
+	err = bucket.PutObject(videoName+".mp4", file)//文件名   后缀添加.mp4
+	if err != nil {
+		fmt.Println("Error:", err)
+		return err
+	}
+	fmt.Println("上传视频到oos成功")
 
 
 	//获取第一帧的图片，放到image里面
@@ -69,10 +71,10 @@ func UploadToServer( data *multipart.FileHeader,videoName string) error {
 	}
 
 	//上传文件到 OSS
-	//err = bucket.PutObject(videoName+".jpg", file)
-	//if err != nil {
-	//	return err
-	//}
+	err = bucket.PutObject(videoName+".jpg", file)
+	if err != nil {
+		return err
+	}
 
 
 
@@ -132,8 +134,8 @@ func printDir(path string){
 
 //获取图片的第一帧			返回错误和路径
 func GetImage(Filename string) (error,string){
-	//videoURL := config.VideoConfig.Url+Filename+".mp4"
-	videoURL := "https://www.w3schools.com/html/movie.mp4"
+	videoURL := config.VideoConfig.Url+Filename+".mp4"
+	//videoURL := "https://www.w3schools.com/html/movie.mp4"
 
 	outputPath := "public/"+Filename//图片的路径
 	fmt.Println("链接是",videoURL)
