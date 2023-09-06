@@ -32,7 +32,7 @@ type VideoServiceImpl struct {
 
 // Publish
 // 将传入的视频流保存在服务器中，并将链接存储在mysql表中
-func (videoService *VideoServiceImpl) Publish(data *multipart.FileHeader, userId int64, title string) error {
+func (videoService VideoServiceImpl) Publish(data *multipart.FileHeader, userId int64, title string) error {
 
 	fmt.Println("方法data.Open() 成功")
 	//fmt.Println("文件名字叫做",file)
@@ -93,7 +93,7 @@ func SaveVideo(name string, userId int64, title string) error {
 
 }
 
-func (videoService *VideoServiceImpl) ShowVideoList(userId int64) ([]models.Video, error) {
+func (videoService VideoServiceImpl) ShowVideoList(userId int64) ([]models.Video, error) {
 
 	videos, err := QueryVideosById(userId)
 	if err != nil {
@@ -113,12 +113,12 @@ func (videoService VideoServiceImpl) GetVideoListByUserID(userID int64) ([]model
 }
 
 // QueryVideosById 根据用户id查询视频
-func QueryVideosById(user_id int64) ([]models.Video, error) {
+func QueryVideosById(userId int64) ([]models.Video, error) {
 	var videos []models.Video
 
-	log.Println("user_id=", user_id)
+	log.Println("userId=", userId)
 	s := "select * from videos join user on videos.author_id=user.id where user.id=? and tinytiktok.user.is_deleted=false"
-	r, err := db.GetMysql().Query(s, user_id)
+	r, err := db.GetMysql().Query(s, userId)
 	fmt.Println("sql语句是", s)
 	var v models.Video
 	defer func(r *sql.Rows) {
